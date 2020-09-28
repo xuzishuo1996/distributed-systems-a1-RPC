@@ -9,6 +9,8 @@ import org.apache.thrift.server.TSimpleServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TFramedTransport;
 
+import genJava.BcryptService;
+import genJava.IllegalArgument;
 
 public class BENode {
 	static Logger log;

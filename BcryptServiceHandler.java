@@ -3,6 +3,9 @@ import java.util.List;
 
 import org.mindrot.jbcrypt.BCrypt;
 
+import genJava.BcryptService;
+import genJava.IllegalArgument;
+
 public class BcryptServiceHandler implements BcryptService.Iface {
 	public List<String> hashPassword(List<String> password, short logRounds) throws IllegalArgument, org.apache.thrift.TException
 	{

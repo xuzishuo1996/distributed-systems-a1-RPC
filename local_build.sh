@@ -26,16 +26,17 @@ if [ $ret -ne 0 ]; then
 fi
 $THRIFT_CC --version
 $THRIFT_CC --gen java:generated_annotations=suppress a1.thrift
+mv gen-java/ genJava/
 
 
 echo --- Compiling Java
 $JAVA_CC -version
-$JAVA_CC gen-java/*.java -cp .:"lib/*"
-$JAVA_CC *.java -cp .:gen-java/:"lib/*":"jBCrypt-0.4/*"
+$JAVA_CC genJava/*.java -cp .:"lib/*"
+$JAVA_CC *.java -cp .:genJava/:"lib/*":"jBCrypt-0.4/*"
 
 echo --- Done, now run your code.
 echo	 Examples:
-echo $JAVA '-cp .:gen-java/:"lib/*":"jBCrypt-0.4/*" FENode 10123'
-echo $JAVA '-cp .:gen-java/:"lib/*":"jBCrypt-0.4/*" BENode localhost 10123 10124'
-echo $JAVA '-cp .:gen-java/:"lib/*":"jBCrypt-0.4/*" Client localhost 10123 hello'
+echo $JAVA '-cp .:genJava/:"lib/*":"jBCrypt-0.4/*" FENode 10123'
+echo $JAVA '-cp .:genJava/:"lib/*":"jBCrypt-0.4/*" BENode localhost 10123 10124'
+echo $JAVA '-cp .:genJava/:"lib/*":"jBCrypt-0.4/*" Client localhost 10123 hello'
 

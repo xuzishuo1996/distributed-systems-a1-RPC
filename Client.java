@@ -9,6 +9,9 @@ import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TTransportFactory;
 
+import genJava.BcryptService;
+import genJava.IllegalArgument;
+
 public class Client {
 	public static void main(String [] args) {
 		if (args.length != 3) {
