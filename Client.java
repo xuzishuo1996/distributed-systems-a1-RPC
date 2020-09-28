@@ -9,11 +9,44 @@ import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TTransportFactory;
 
-import genJava.BcryptService;
-import genJava.IllegalArgument;
+//import genJava.BcryptService;
+//import genJava.IllegalArgument;
 
 public class Client {
 	public static void main(String [] args) {
+		if (args.length < 3) {
+			System.err.println("Usage: java Client FE_host FE_port passwords");
+			System.exit(-1);
+		}
+
+		try {
+			TSocket sock = new TSocket(args[0], Integer.parseInt(args[1]));
+			TTransport transport = new TFramedTransport(sock);
+			TProtocol protocol = new TBinaryProtocol(transport);
+			BcryptService.Client client = new BcryptService.Client(protocol);
+			transport.open();
+
+			List<String> password = new ArrayList<>();
+			for (int i = 3; i < args.length; ++i) {
+				password.add(args[i]);
+			}
+
+			/* IllegalArgument Tests */
+//			// Test1: Too many rounds: passed
+//			List<String> hash = client.hashPassword(password, (short)50);
+//			// Test2: passwords and hashes length does not match: passed
+//			List<String> hash = client.hashPassword(password, (short)10);
+//			System.out.println("Before removing a hash: " + client.checkPassword(password, hash));
+//			hash.remove(hash.size() - 1);
+//			client.checkPassword(password, hash);
+
+			transport.close();
+		} catch (TException x) {
+			x.printStackTrace();
+		}
+	}
+
+	private static void deprecatedMain(String[] args) {
 		if (args.length != 3) {
 			System.err.println("Usage: java Client FE_host FE_port password");
 			System.exit(-1);
@@ -28,7 +61,7 @@ public class Client {
 
 			List<String> password = new ArrayList<>();
 			password.add(args[2]);
-			List<String> hash = client.hashPassword(password, (short)10);
+			List<String> hash = client.hashPassword(password, (short) 10);
 			System.out.println("Password: " + password.get(0));
 			System.out.println("Hash: " + hash.get(0));
 			System.out.println("Positive check: " + client.checkPassword(password, hash));
@@ -45,6 +78,9 @@ public class Client {
 			transport.close();
 		} catch (TException x) {
 			x.printStackTrace();
-		} 
+		}
 	}
 }
+
+
+

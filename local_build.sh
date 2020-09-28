@@ -12,7 +12,7 @@ THRIFT_CC=/usr/local/bin/thrift
 echo --- Cleaning
 rm -f *.jar
 rm -f *.class
-rm -fr gen-java
+rm -fr genJava
 
 echo --- Compiling Thrift IDL
 $THRIFT_CC --version &> /dev/null
