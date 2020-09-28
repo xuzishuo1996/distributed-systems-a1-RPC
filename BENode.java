@@ -5,9 +5,12 @@ import org.apache.log4j.Logger;
 
 import org.apache.thrift.TProcessorFactory;
 import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.server.TSimpleServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TFramedTransport;
+import org.apache.thrift.transport.TSocket;
+import org.apache.thrift.transport.TTransport;
 
 //import genJava.BcryptService;
 //import genJava.IllegalArgument;
@@ -30,16 +33,35 @@ public class BENode {
 		int portBE = Integer.parseInt(args[2]);
 		log.info("Launching BE node on port " + portBE + " at host " + getHostName());
 
-		// launch Thrift server
-		BcryptService.Processor processor = new BcryptService.Processor<BcryptService.Iface>(new BcryptServiceHandler());
-		TServerSocket socket = new TServerSocket(portBE);
-		TSimpleServer.Args sargs = new TSimpleServer.Args(socket);
-		sargs.protocolFactory(new TBinaryProtocol.Factory());
-		sargs.transportFactory(new TFramedTransport.Factory());
-		sargs.processorFactory(new TProcessorFactory(processor));
-		//sargs.maxWorkerThreads(64);
-		TSimpleServer server = new TSimpleServer(sargs);
-		server.serve();
+		// connect to the FE node
+		TSocket sock = new TSocket(args[0], Integer.parseInt(args[1]));
+		TTransport transport = new TFramedTransport(sock);
+		TProtocol protocol = new TBinaryProtocol(transport);
+		ConnectFEService.Client client = new ConnectFEService.Client(protocol);
+		transport.open();
+
+		while (true) {
+			try {
+				String hostBE = InetAddress.getLocalHost().toString();
+				boolean succeed = client.connectFE(hostBE, portBE);
+				if (succeed) {
+					break;
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+
+//		// launch Thrift server
+//		BcryptService.Processor processor = new BcryptService.Processor<BcryptService.Iface>(new BcryptServiceHandler());
+//		TServerSocket socket = new TServerSocket(portBE);
+//		TSimpleServer.Args sargs = new TSimpleServer.Args(socket);
+//		sargs.protocolFactory(new TBinaryProtocol.Factory());
+//		sargs.transportFactory(new TFramedTransport.Factory());
+//		sargs.processorFactory(new TProcessorFactory(processor));
+//		//sargs.maxWorkerThreads(64);
+//		TSimpleServer server = new TSimpleServer(sargs);
+//		server.serve();
 	}
 
 	static String getHostName()
