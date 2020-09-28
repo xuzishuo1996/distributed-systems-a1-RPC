@@ -26,10 +26,17 @@ public class Client {
 			BcryptService.Client client = new BcryptService.Client(protocol);
 			transport.open();
 
-			List<String> password = new ArrayList<>();
+			List<String> passwords = new ArrayList<>();
 			for (int i = 3; i < args.length; ++i) {
-				password.add(args[i]);
+				passwords.add(args[i]);
 			}
+			List<String> hashes = client.hashPassword(passwords, (short)10);
+			List<Boolean> result = client.checkPassword(passwords, hashes);
+			boolean match = true;
+			for (Boolean b: result) {
+				match = b;
+			}
+			System.out.println("Should be true: " + match);
 
 			/* IllegalArgument Tests */
 //			// Test1: Too many rounds: passed
