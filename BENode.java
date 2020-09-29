@@ -7,10 +7,7 @@ import org.apache.thrift.TProcessorFactory;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.server.TSimpleServer;
-import org.apache.thrift.transport.TServerSocket;
-import org.apache.thrift.transport.TFramedTransport;
-import org.apache.thrift.transport.TSocket;
-import org.apache.thrift.transport.TTransport;
+import org.apache.thrift.transport.*;
 
 //import genJava.BcryptService;
 //import genJava.IllegalArgument;
@@ -34,23 +31,23 @@ public class BENode {
 		log.info("Launching BE node on port " + portBE + " at host " + getHostName());
 
 		// connect to the FE node
-		TSocket sock = new TSocket(args[0], Integer.parseInt(args[1]));
+		TSocket sock = new TSocket(hostFE, portFE);
 		TTransport transport = new TFramedTransport(sock);
 		TProtocol protocol = new TBinaryProtocol(transport);
-		ConnectFEService.Client client = new ConnectFEService.Client(protocol);
-		transport.open();
-
+		BcryptService.Client client = new BcryptService.Client(protocol);
 		while (true) {
+			boolean succeed = true;
 			try {
-				String hostBE = InetAddress.getLocalHost().toString();
-				boolean succeed = client.connectFE(hostBE, portBE);
-				if (succeed) {
-					break;
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
+				transport.open();
+			} catch (TTransportException ignored) {
+				succeed = false;
 			}
+			if (succeed) { break; }
 		}
+
+		String hostBE = InetAddress.getLocalHost().toString();
+		client.connectFE(hostBE, portBE);
+
 
 //		// launch Thrift server
 //		BcryptService.Processor processor = new BcryptService.Processor<BcryptService.Iface>(new BcryptServiceHandler());
