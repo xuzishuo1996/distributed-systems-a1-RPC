@@ -7,6 +7,7 @@ import org.apache.thrift.TProcessorFactory;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.server.TSimpleServer;
+import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.*;
 
 //import genJava.BcryptService;
@@ -26,6 +27,7 @@ public class BENode {
 		log = Logger.getLogger(BENode.class.getName());
 
 		String hostFE = args[0];
+		String hostBE = getHostName();
 		int portFE = Integer.parseInt(args[1]);
 		int portBE = Integer.parseInt(args[2]);
 		log.info("Launching BE node on port " + portBE + " at host " + getHostName());
@@ -44,21 +46,20 @@ public class BENode {
 			}
 			if (succeed) { break; }
 		}
-
-		String hostBE = InetAddress.getLocalHost().toString();
 		client.connectFE(hostBE, portBE);
 
 
-//		// launch Thrift server
-//		BcryptService.Processor processor = new BcryptService.Processor<BcryptService.Iface>(new BcryptServiceHandler(true));
-//		TServerSocket socket = new TServerSocket(portBE);
-//		TSimpleServer.Args sargs = new TSimpleServer.Args(socket);
-//		sargs.protocolFactory(new TBinaryProtocol.Factory());
-//		sargs.transportFactory(new TFramedTransport.Factory());
-//		sargs.processorFactory(new TProcessorFactory(processor));
-//		//sargs.maxWorkerThreads(64);
-//		TSimpleServer server = new TSimpleServer(sargs);
-//		server.serve();
+		/* launch Thrift TThreadPoolServer: uses one thread to accept connections
+		 * and then handles each connection using a dedicated thread
+		 */
+		BcryptService.Processor<BcryptService.Iface> processor = new BcryptService.Processor<BcryptService.Iface>(new BcryptServiceHandler(true));
+		TServerSocket socket = new TServerSocket(portBE);
+		TThreadPoolServer.Args sargs = new TThreadPoolServer.Args(socket);
+		sargs.protocolFactory(new TBinaryProtocol.Factory());
+		sargs.transportFactory(new TFramedTransport.Factory());
+		sargs.processorFactory(new TProcessorFactory(processor));
+		TThreadPoolServer server = new TThreadPoolServer(sargs);
+		server.serve();
 	}
 
 	static String getHostName()
