@@ -20,7 +20,7 @@ public class Coordinator {
     public static List<String> getAvailableNodes() {
         List<String> availableNodes = new ArrayList<>();
         for (Map.Entry<String, NodeInfo> entry: nodeMap.entrySet()) {
-            if (entry.getValue().available()) {
+            if (entry.getValue().isBusy()) {
                 availableNodes.add(entry.getKey());
             }
         }

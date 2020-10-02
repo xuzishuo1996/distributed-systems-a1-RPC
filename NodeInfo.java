@@ -8,8 +8,16 @@ public class NodeInfo {
         this.load = 0;
     }
 
-    public boolean available() {
+    public boolean isBusy() {
         return busy;
+    }
+
+    public void setBusy(boolean busy) {
+        this.busy = busy;
+    }
+
+    public double getLoad() {
+        return load;
     }
 
     public void addLoad(int numOfPasswords, short logRounds) {
@@ -22,9 +30,5 @@ public class NodeInfo {
         if (load == 0) {
             busy = false;
         }
-    }
-
-    public double getLoad() {
-        return load;
     }
 }
