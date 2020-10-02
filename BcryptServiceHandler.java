@@ -7,6 +7,12 @@ import org.mindrot.jbcrypt.BCrypt;
 //import genJava.IllegalArgument;
 
 public class BcryptServiceHandler implements BcryptService.Iface {
+	private final boolean isFE;
+
+	public BcryptServiceHandler(boolean isFE) {
+		this.isFE = isFE;
+	}
+
 	public List<String> hashPassword(List<String> password, short logRounds) throws IllegalArgument, org.apache.thrift.TException
 	{
 		try {
@@ -44,8 +50,17 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 		}
 	}
 
-	public boolean connectFE(String hostBE, int portBE) throws IllegalArgument, org.apache.thrift.TException {
+	public void connectFE(String hostBE, int portBE) throws IllegalArgument, org.apache.thrift.TException {
+		// for test only
 		System.out.println("Get connection request from BE node: " + hostBE + ":" + portBE);
-		return true;
+
+		try {
+			String address = hostBE + ":" + portBE;
+			if (!Coordinator.containsNode(address)) {
+				Coordinator.addNode(address, new NodeInfo());
+			}
+		} catch (Exception e) {
+			throw new IllegalArgument(e.getMessage());
+		}
 	}
 }

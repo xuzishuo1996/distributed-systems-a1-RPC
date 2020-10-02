@@ -50,7 +50,7 @@ public class BENode {
 
 
 //		// launch Thrift server
-//		BcryptService.Processor processor = new BcryptService.Processor<BcryptService.Iface>(new BcryptServiceHandler());
+//		BcryptService.Processor processor = new BcryptService.Processor<BcryptService.Iface>(new BcryptServiceHandler(true));
 //		TServerSocket socket = new TServerSocket(portBE);
 //		TSimpleServer.Args sargs = new TSimpleServer.Args(socket);
 //		sargs.protocolFactory(new TBinaryProtocol.Factory());

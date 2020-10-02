@@ -13,7 +13,7 @@ public class BcryptService {
 
     public java.util.List<java.lang.Boolean> checkPassword(java.util.List<java.lang.String> password, java.util.List<java.lang.String> hash) throws IllegalArgument, org.apache.thrift.TException;
 
-    public boolean connectFE(java.lang.String hostBE, int portBE) throws IllegalArgument, org.apache.thrift.TException;
+    public void connectFE(java.lang.String hostBE, int portBE) throws IllegalArgument, org.apache.thrift.TException;
 
   }
 
@@ -23,7 +23,7 @@ public class BcryptService {
 
     public void checkPassword(java.util.List<java.lang.String> password, java.util.List<java.lang.String> hash, org.apache.thrift.async.AsyncMethodCallback<java.util.List<java.lang.Boolean>> resultHandler) throws org.apache.thrift.TException;
 
-    public void connectFE(java.lang.String hostBE, int portBE, org.apache.thrift.async.AsyncMethodCallback<java.lang.Boolean> resultHandler) throws org.apache.thrift.TException;
+    public void connectFE(java.lang.String hostBE, int portBE, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException;
 
   }
 
@@ -101,10 +101,10 @@ public class BcryptService {
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "checkPassword failed: unknown result");
     }
 
-    public boolean connectFE(java.lang.String hostBE, int portBE) throws IllegalArgument, org.apache.thrift.TException
+    public void connectFE(java.lang.String hostBE, int portBE) throws IllegalArgument, org.apache.thrift.TException
     {
       send_connectFE(hostBE, portBE);
-      return recv_connectFE();
+      recv_connectFE();
     }
 
     public void send_connectFE(java.lang.String hostBE, int portBE) throws org.apache.thrift.TException
@@ -115,17 +115,14 @@ public class BcryptService {
       sendBase("connectFE", args);
     }
 
-    public boolean recv_connectFE() throws IllegalArgument, org.apache.thrift.TException
+    public void recv_connectFE() throws IllegalArgument, org.apache.thrift.TException
     {
       connectFE_result result = new connectFE_result();
       receiveBase(result, "connectFE");
-      if (result.isSetSuccess()) {
-        return result.success;
-      }
       if (result.e != null) {
         throw result.e;
       }
-      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "connectFE failed: unknown result");
+      return;
     }
 
   }
@@ -216,17 +213,17 @@ public class BcryptService {
       }
     }
 
-    public void connectFE(java.lang.String hostBE, int portBE, org.apache.thrift.async.AsyncMethodCallback<java.lang.Boolean> resultHandler) throws org.apache.thrift.TException {
+    public void connectFE(java.lang.String hostBE, int portBE, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException {
       checkReady();
       connectFE_call method_call = new connectFE_call(hostBE, portBE, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
-    public static class connectFE_call extends org.apache.thrift.async.TAsyncMethodCall<java.lang.Boolean> {
+    public static class connectFE_call extends org.apache.thrift.async.TAsyncMethodCall<Void> {
       private java.lang.String hostBE;
       private int portBE;
-      public connectFE_call(java.lang.String hostBE, int portBE, org.apache.thrift.async.AsyncMethodCallback<java.lang.Boolean> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public connectFE_call(java.lang.String hostBE, int portBE, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.hostBE = hostBE;
         this.portBE = portBE;
@@ -241,13 +238,13 @@ public class BcryptService {
         prot.writeMessageEnd();
       }
 
-      public java.lang.Boolean getResult() throws IllegalArgument, org.apache.thrift.TException {
+      public Void getResult() throws IllegalArgument, org.apache.thrift.TException {
         if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
           throw new java.lang.IllegalStateException("Method call not finished!");
         }
         org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
         org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-        return (new Client(prot)).recv_connectFE();
+        return null;
       }
     }
 
@@ -349,8 +346,7 @@ public class BcryptService {
       public connectFE_result getResult(I iface, connectFE_args args) throws org.apache.thrift.TException {
         connectFE_result result = new connectFE_result();
         try {
-          result.success = iface.connectFE(args.hostBE, args.portBE);
-          result.setSuccessIsSet(true);
+          iface.connectFE(args.hostBE, args.portBE);
         } catch (IllegalArgument e) {
           result.e = e;
         }
@@ -507,7 +503,7 @@ public class BcryptService {
       }
     }
 
-    public static class connectFE<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, connectFE_args, java.lang.Boolean> {
+    public static class connectFE<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, connectFE_args, Void> {
       public connectFE() {
         super("connectFE");
       }
@@ -516,13 +512,11 @@ public class BcryptService {
         return new connectFE_args();
       }
 
-      public org.apache.thrift.async.AsyncMethodCallback<java.lang.Boolean> getResultHandler(final org.apache.thrift.server.AbstractNonblockingServer.AsyncFrameBuffer fb, final int seqid) {
+      public org.apache.thrift.async.AsyncMethodCallback<Void> getResultHandler(final org.apache.thrift.server.AbstractNonblockingServer.AsyncFrameBuffer fb, final int seqid) {
         final org.apache.thrift.AsyncProcessFunction fcall = this;
-        return new org.apache.thrift.async.AsyncMethodCallback<java.lang.Boolean>() { 
-          public void onComplete(java.lang.Boolean o) {
+        return new org.apache.thrift.async.AsyncMethodCallback<Void>() { 
+          public void onComplete(Void o) {
             connectFE_result result = new connectFE_result();
-            result.success = o;
-            result.setSuccessIsSet(true);
             try {
               fcall.sendResponse(fb, result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
             } catch (org.apache.thrift.transport.TTransportException e) {
@@ -568,7 +562,7 @@ public class BcryptService {
         return false;
       }
 
-      public void start(I iface, connectFE_args args, org.apache.thrift.async.AsyncMethodCallback<java.lang.Boolean> resultHandler) throws org.apache.thrift.TException {
+      public void start(I iface, connectFE_args args, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException {
         iface.connectFE(args.hostBE, args.portBE,resultHandler);
       }
     }
@@ -3182,18 +3176,15 @@ public class BcryptService {
   public static class connectFE_result implements org.apache.thrift.TBase<connectFE_result, connectFE_result._Fields>, java.io.Serializable, Cloneable, Comparable<connectFE_result>   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("connectFE_result");
 
-    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.BOOL, (short)0);
     private static final org.apache.thrift.protocol.TField E_FIELD_DESC = new org.apache.thrift.protocol.TField("e", org.apache.thrift.protocol.TType.STRUCT, (short)1);
 
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new connectFE_resultStandardSchemeFactory();
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new connectFE_resultTupleSchemeFactory();
 
-    public boolean success; // required
     public @org.apache.thrift.annotation.Nullable IllegalArgument e; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      SUCCESS((short)0, "success"),
       E((short)1, "e");
 
       private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -3210,8 +3201,6 @@ public class BcryptService {
       @org.apache.thrift.annotation.Nullable
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 0: // SUCCESS
-            return SUCCESS;
           case 1: // E
             return E;
           default:
@@ -3255,13 +3244,9 @@ public class BcryptService {
     }
 
     // isset id assignments
-    private static final int __SUCCESS_ISSET_ID = 0;
-    private byte __isset_bitfield = 0;
     public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
       tmpMap.put(_Fields.E, new org.apache.thrift.meta_data.FieldMetaData("e", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, IllegalArgument.class)));
       metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
@@ -3272,12 +3257,9 @@ public class BcryptService {
     }
 
     public connectFE_result(
-      boolean success,
       IllegalArgument e)
     {
       this();
-      this.success = success;
-      setSuccessIsSet(true);
       this.e = e;
     }
 
@@ -3285,8 +3267,6 @@ public class BcryptService {
      * Performs a deep copy on <i>other</i>.
      */
     public connectFE_result(connectFE_result other) {
-      __isset_bitfield = other.__isset_bitfield;
-      this.success = other.success;
       if (other.isSetE()) {
         this.e = new IllegalArgument(other.e);
       }
@@ -3298,32 +3278,7 @@ public class BcryptService {
 
     @Override
     public void clear() {
-      setSuccessIsSet(false);
-      this.success = false;
       this.e = null;
-    }
-
-    public boolean isSuccess() {
-      return this.success;
-    }
-
-    public connectFE_result setSuccess(boolean success) {
-      this.success = success;
-      setSuccessIsSet(true);
-      return this;
-    }
-
-    public void unsetSuccess() {
-      __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __SUCCESS_ISSET_ID);
-    }
-
-    /** Returns true if field success is set (has been assigned a value) and false otherwise */
-    public boolean isSetSuccess() {
-      return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __SUCCESS_ISSET_ID);
-    }
-
-    public void setSuccessIsSet(boolean value) {
-      __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __SUCCESS_ISSET_ID, value);
     }
 
     @org.apache.thrift.annotation.Nullable
@@ -3353,14 +3308,6 @@ public class BcryptService {
 
     public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
       switch (field) {
-      case SUCCESS:
-        if (value == null) {
-          unsetSuccess();
-        } else {
-          setSuccess((java.lang.Boolean)value);
-        }
-        break;
-
       case E:
         if (value == null) {
           unsetE();
@@ -3375,9 +3322,6 @@ public class BcryptService {
     @org.apache.thrift.annotation.Nullable
     public java.lang.Object getFieldValue(_Fields field) {
       switch (field) {
-      case SUCCESS:
-        return isSuccess();
-
       case E:
         return getE();
 
@@ -3392,8 +3336,6 @@ public class BcryptService {
       }
 
       switch (field) {
-      case SUCCESS:
-        return isSetSuccess();
       case E:
         return isSetE();
       }
@@ -3415,15 +3357,6 @@ public class BcryptService {
       if (this == that)
         return true;
 
-      boolean this_present_success = true;
-      boolean that_present_success = true;
-      if (this_present_success || that_present_success) {
-        if (!(this_present_success && that_present_success))
-          return false;
-        if (this.success != that.success)
-          return false;
-      }
-
       boolean this_present_e = true && this.isSetE();
       boolean that_present_e = true && that.isSetE();
       if (this_present_e || that_present_e) {
@@ -3440,8 +3373,6 @@ public class BcryptService {
     public int hashCode() {
       int hashCode = 1;
 
-      hashCode = hashCode * 8191 + ((success) ? 131071 : 524287);
-
       hashCode = hashCode * 8191 + ((isSetE()) ? 131071 : 524287);
       if (isSetE())
         hashCode = hashCode * 8191 + e.hashCode();
@@ -3457,16 +3388,6 @@ public class BcryptService {
 
       int lastComparison = 0;
 
-      lastComparison = java.lang.Boolean.valueOf(isSetSuccess()).compareTo(other.isSetSuccess());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetSuccess()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.success, other.success);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
       lastComparison = java.lang.Boolean.valueOf(isSetE()).compareTo(other.isSetE());
       if (lastComparison != 0) {
         return lastComparison;
@@ -3498,10 +3419,6 @@ public class BcryptService {
       java.lang.StringBuilder sb = new java.lang.StringBuilder("connectFE_result(");
       boolean first = true;
 
-      sb.append("success:");
-      sb.append(this.success);
-      first = false;
-      if (!first) sb.append(", ");
       sb.append("e:");
       if (this.e == null) {
         sb.append("null");
@@ -3528,8 +3445,6 @@ public class BcryptService {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, java.lang.ClassNotFoundException {
       try {
-        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
-        __isset_bitfield = 0;
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -3554,14 +3469,6 @@ public class BcryptService {
             break;
           }
           switch (schemeField.id) {
-            case 0: // SUCCESS
-              if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
-                struct.success = iprot.readBool();
-                struct.setSuccessIsSet(true);
-              } else { 
-                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-              }
-              break;
             case 1: // E
               if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
                 struct.e = new IllegalArgument();
@@ -3586,11 +3493,6 @@ public class BcryptService {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
-        if (struct.isSetSuccess()) {
-          oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
-          oprot.writeBool(struct.success);
-          oprot.writeFieldEnd();
-        }
         if (struct.e != null) {
           oprot.writeFieldBegin(E_FIELD_DESC);
           struct.e.write(oprot);
@@ -3614,16 +3516,10 @@ public class BcryptService {
       public void write(org.apache.thrift.protocol.TProtocol prot, connectFE_result struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
         java.util.BitSet optionals = new java.util.BitSet();
-        if (struct.isSetSuccess()) {
+        if (struct.isSetE()) {
           optionals.set(0);
         }
-        if (struct.isSetE()) {
-          optionals.set(1);
-        }
-        oprot.writeBitSet(optionals, 2);
-        if (struct.isSetSuccess()) {
-          oprot.writeBool(struct.success);
-        }
+        oprot.writeBitSet(optionals, 1);
         if (struct.isSetE()) {
           struct.e.write(oprot);
         }
@@ -3632,12 +3528,8 @@ public class BcryptService {
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, connectFE_result struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-        java.util.BitSet incoming = iprot.readBitSet(2);
+        java.util.BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
-          struct.success = iprot.readBool();
-          struct.setSuccessIsSet(true);
-        }
-        if (incoming.get(1)) {
           struct.e = new IllegalArgument();
           struct.e.read(iprot);
           struct.setEIsSet(true);
