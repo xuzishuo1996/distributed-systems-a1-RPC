@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Logger;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
@@ -19,9 +21,12 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 	private final boolean isFE;
 	private final static int BE_WORKER_THREADS_NUM = 2;
 	private final static int BE_MULTI_THREAD_THRESHOLD = 5;		// should be greater than BE_WORKER_THREADS_NUM
+	private final Logger log;
 
 	public BcryptServiceHandler(boolean isFE) {
 		this.isFE = isFE;
+		BasicConfigurator.configure();
+		log = Logger.getLogger(BcryptServiceHandler.class.getName());
 	}
 
 	public List<String> hashPassword(List<String> password, short logRounds) throws IllegalArgument, org.apache.thrift.TException
@@ -49,6 +54,9 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 
 				int num = availableBEs.size();
 				if (num == 0) {
+					// for test only
+					log.info("hashing on FE!");
+
 					hashPasswordHelper(input, logRounds, 0, n - 1, res);
 					return new ArrayList<>(Arrays.asList(res));
 				} else {
@@ -90,9 +98,15 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 				// set BE to busy and add load
 //				String host = InetAddress.getLocalHost().getHostName();
 
+				// for test only
+				log.info("hashing on BE!");
+
 				if (n < BE_MULTI_THREAD_THRESHOLD) {
 					hashPasswordHelper(input, logRounds, 0, n - 1, res);
 				} else {
+					// for test only
+					log.info("multi-threaded hashing on BE!");
+
 					int batchSize = n / BE_WORKER_THREADS_NUM;
 					CountDownLatch latch = new CountDownLatch(BE_WORKER_THREADS_NUM);
 					for (int i = 0; i < BE_WORKER_THREADS_NUM; ++i) {
@@ -144,6 +158,9 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 
 				int num = availableBEs.size();
 				if (num == 0) {
+					// for test only
+					log.info("checking on FE!");
+
 					checkPasswordHelper(passwordArray, hashArray, 0, n - 1, res);
 					return new ArrayList<>(Arrays.asList(res));
 				} else {
@@ -186,9 +203,15 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 				// set BE to busy and add load
 //				String host = InetAddress.getLocalHost().getHostName();
 
+				// for test only
+				log.info("checking on BE!");
+
 				if (n < BE_MULTI_THREAD_THRESHOLD) {
 					checkPasswordHelper(passwordArray, hashArray, 0, n - 1, res);
 				} else {
+					// for test only
+					log.info("multi-threaded checking on BE!");
+
 					int batchSize = n / BE_WORKER_THREADS_NUM;
 					CountDownLatch latch = new CountDownLatch(BE_WORKER_THREADS_NUM);
 					for (int i = 0; i < BE_WORKER_THREADS_NUM; ++i) {
