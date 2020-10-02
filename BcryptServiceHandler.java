@@ -5,6 +5,11 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import org.apache.thrift.TException;
+import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.transport.TFramedTransport;
+import org.apache.thrift.transport.TSocket;
+import org.apache.thrift.transport.TTransport;
 import org.mindrot.jbcrypt.BCrypt;
 
 //import genJava.BcryptService;
@@ -13,7 +18,7 @@ import org.mindrot.jbcrypt.BCrypt;
 public class BcryptServiceHandler implements BcryptService.Iface {
 	private final boolean isFE;
 	private final static int BE_WORKER_THREADS_NUM = 2;
-	private final static int BE_MULTI_THREAD_THRESHOLD = 5;
+	private final static int BE_MULTI_THREAD_THRESHOLD = 5;		// should be greater than BE_WORKER_THREADS_NUM
 
 	public BcryptServiceHandler(boolean isFE) {
 		this.isFE = isFE;
@@ -21,7 +26,8 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 
 	public List<String> hashPassword(List<String> password, short logRounds) throws IllegalArgument, org.apache.thrift.TException
 	{
-		if (password.size() == 0) {
+		int n = password.size();
+		if (n == 0) {
 			return new ArrayList<>();
 		}
 		try {
@@ -37,28 +43,67 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 //			return ret;
 
 			String[] input = password.toArray(new String[0]);
-			String[] res = new String[input.length];
+			String[] res = new String[n];
 			if (isFE) {
+				List<String> availableBEs = Coordinator.getAvailableNodes();
+
+				int num = availableBEs.size();
+				if (num == 0) {
+					hashPasswordHelper(input, logRounds, 0, n - 1, res);
+					return new ArrayList<>(Arrays.asList(res));
+				} else {
+					List<String> result = new ArrayList<>();
+					String[][] addresses = new String[num][2];
+					int splitSize = n / num;
+					for (int i = 0; i < num; ++i) {
+						addresses[i] = availableBEs.get(i).split(":");
+						int start = splitSize * i;
+						int end;
+						if (i == num - 1) {
+							end = num;
+						} else {
+							end = start + splitSize;    // exclusive
+						}
+						List<String> subList = password.subList(start, end);
+
+						TSocket sock = new TSocket(addresses[i][0], Integer.parseInt(addresses[i][1]));
+						TTransport transport = new TFramedTransport(sock);
+						TProtocol protocol = new TBinaryProtocol(transport);
+						BcryptService.Client client = new BcryptService.Client(protocol);
+						transport.open();
+
+						NodeInfo currInfo = Coordinator.nodeMap.get(availableBEs.get(i));
+						currInfo.setBusy(true);
+						currInfo.addLoad(splitSize, logRounds);
+
+						List<String> subResult = client.hashPassword(subList, logRounds);
+						result.addAll(subResult);
+
+						currInfo.setBusy(false);
+						currInfo.subLoad(splitSize, logRounds);
+						transport.close();
+					}
+					return result;
+				}
 
 			} else {	// BE
 				// set BE to busy and add load
 //				String host = InetAddress.getLocalHost().getHostName();
 
-				int size = password.size();
-				if (size < BE_MULTI_THREAD_THRESHOLD) {
-					hashPasswordHelper(input, logRounds, 0, size - 1, res);
+				if (n < BE_MULTI_THREAD_THRESHOLD) {
+					hashPasswordHelper(input, logRounds, 0, n - 1, res);
 				} else {
-					int batchSize = size / BE_WORKER_THREADS_NUM;
+					int batchSize = n / BE_WORKER_THREADS_NUM;
 					CountDownLatch latch = new CountDownLatch(BE_WORKER_THREADS_NUM);
 					for (int i = 0; i < BE_WORKER_THREADS_NUM; ++i) {
 						int start = batchSize * i;
 						int end;
 						if (i == BE_WORKER_THREADS_NUM - 1) {
-							end = size - 1;
+							end = n - 1;
 						} else {
 							end = start + batchSize - 1;
 						}
-						new HashTask(input, logRounds, 0, end, res, latch);
+						new HashTask(input, logRounds, start, end, res, latch);
 					}
 					latch.await();
 				}
@@ -77,6 +122,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 		if (password.size() == 0 && hash.size() == 0) {
 			return new ArrayList<>();
 		}
+		int n = password.size();
 		try {
 			if (password.size() != hash.size()) {
 				throw new IllegalArgument("the length of passwords and hashes does not match");
@@ -92,34 +138,75 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 
 			String[] passwordArray = password.toArray(new String[0]);
 			String[] hashArray = hash.toArray(new String[0]);
-			Boolean[] res = new Boolean[][passwordArray.length];
+			Boolean[] res = new Boolean[n];
 			if (isFE) {
+				List<String> availableBEs = Coordinator.getAvailableNodes();
+
+				int num = availableBEs.size();
+				if (num == 0) {
+					checkPasswordHelper(passwordArray, hashArray, 0, n - 1, res);
+					return new ArrayList<>(Arrays.asList(res));
+				} else {
+					List<Boolean> result = new ArrayList<>();
+					String[][] addresses = new String[num][2];
+					int splitSize = n / num;
+					for (int i = 0; i < num; ++i) {
+						addresses[i] = availableBEs.get(i).split(":");
+						int start = splitSize * i;
+						int end;
+						if (i == num - 1) {
+							end = num;
+						} else {
+							end = start + splitSize;    // exclusive
+						}
+						List<String> subPassword = password.subList(start, end);
+						List<String> subHash = hash.subList(start, end);
+
+						TSocket sock = new TSocket(addresses[i][0], Integer.parseInt(addresses[i][1]));
+						TTransport transport = new TFramedTransport(sock);
+						TProtocol protocol = new TBinaryProtocol(transport);
+						BcryptService.Client client = new BcryptService.Client(protocol);
+						transport.open();
+
+						NodeInfo currInfo = Coordinator.nodeMap.get(availableBEs.get(i));
+						currInfo.setBusy(true);
+						currInfo.addLoad(splitSize, (short)1);
+
+						List<Boolean> subResult = client.checkPassword(subPassword, subHash);
+						result.addAll(subResult);
+
+						currInfo.setBusy(false);
+						currInfo.subLoad(splitSize, (short)1);
+						transport.close();
+					}
+					return result;
+				}
 
 			} else {
 				// set BE to busy and add load
 //				String host = InetAddress.getLocalHost().getHostName();
 
-				int size = password.size();
-				if (size < BE_MULTI_THREAD_THRESHOLD) {
-					checkPasswordHelper(passwordArray, hashArray, 0, size - 1, res);
+				if (n < BE_MULTI_THREAD_THRESHOLD) {
+					checkPasswordHelper(passwordArray, hashArray, 0, n - 1, res);
 				} else {
-					int batchSize = size / BE_WORKER_THREADS_NUM;
+					int batchSize = n / BE_WORKER_THREADS_NUM;
 					CountDownLatch latch = new CountDownLatch(BE_WORKER_THREADS_NUM);
 					for (int i = 0; i < BE_WORKER_THREADS_NUM; ++i) {
 						int start = batchSize * i;
 						int end;
 						if (i == BE_WORKER_THREADS_NUM - 1) {
-							end = size - 1;
+							end = n - 1;
 						} else {
 							end = start + batchSize - 1;
 						}
-						new CheckTask(passwordArray, hashArray, 0, end, res, latch);
+						new CheckTask(passwordArray, hashArray, start, end, res, latch);
 					}
 					latch.await();
 				}
 
 				// sub BE's load
 			}
+			return new ArrayList<>(Arrays.asList(res));
 
 		} catch (Exception e) {
 			throw new IllegalArgument(e.getMessage());
@@ -128,14 +215,14 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 
 	public void hashPasswordHelper(String[] input, short logRounds, int start, int end, String[] res)
 	{
-		for (int i = start; i < end; ++i) {
+		for (int i = start; i <= end; ++i) {	// end: inclusive
 			res[i] = BCrypt.hashpw(input[i], BCrypt.gensalt(logRounds));
 		}
 	}
 
 	public void checkPasswordHelper(String[] password, String[] hash, int start, int end, Boolean[] res)
 	{
-		for (int i = start; i < end; ++i) {
+		for (int i = start; i <= end; ++i) {	// end: inclusive
 			res[i] = BCrypt.checkpw(password[i], hash[i]);
 		}
 	}

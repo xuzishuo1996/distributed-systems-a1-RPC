@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Coordinator {
-    private static Map<String, NodeInfo> nodeMap = new ConcurrentHashMap<>();;    // ConcurrentHashMap: (key: node addr - hostname + port, val: node-info)
+    static Map<String, NodeInfo> nodeMap = new ConcurrentHashMap<>();;    // ConcurrentHashMap: (key: node addr - hostname + port, val: node-info)
 
     // TODO: sychronized or not?
     public static void addNode(String address, NodeInfo info) {
