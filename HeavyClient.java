@@ -33,8 +33,8 @@ public class HeavyClient {
             }
 
             transport.close();
-        } catch (TException x) {
-            x.printStackTrace();
+        } catch (TException e) {
+            e.printStackTrace();
         }
     }
 

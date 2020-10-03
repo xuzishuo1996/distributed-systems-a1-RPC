@@ -52,6 +52,12 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 			if (isFE) {
 				List<String> availableBEs = Coordinator.getAvailableNodes();
 
+				// for test only
+				log.info("=== available BEs ===");
+				for (String s: availableBEs) {
+					log.info(s);
+				}
+
 				int num = availableBEs.size();
 				if (num == 0) {
 					// for test only
@@ -68,7 +74,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 						int start = splitSize * i;
 						int end;
 						if (i == num - 1) {
-							end = num;
+							end = n;
 						} else {
 							end = start + splitSize;    // exclusive
 						}
@@ -83,6 +89,9 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 						NodeInfo currInfo = Coordinator.nodeMap.get(availableBEs.get(i));
 						currInfo.setBusy(true);
 						currInfo.addLoad(splitSize, logRounds);
+
+						// for test only
+						log.info("hashing offload to BE " + i + ": " + addresses[i][0] + " " + addresses[i][1]);
 
 						List<String> subResult = client.hashPassword(subList, logRounds);
 						result.addAll(subResult);
@@ -118,7 +127,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 							end = start + batchSize - 1;
 						}
 						log.info("multi-threaded hashing on BE - part " + i);
-						new HashTask(input, logRounds, start, end, res, latch);
+						new Thread(new HashTask(input, logRounds, start, end, res, latch)).start();
 					}
 					latch.await();
 				}
@@ -128,6 +137,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 			return new ArrayList<>(Arrays.asList(res));
 
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new IllegalArgument(e.getMessage());
 		}
 	}
@@ -157,6 +167,12 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 			if (isFE) {
 				List<String> availableBEs = Coordinator.getAvailableNodes();
 
+				// for test only
+				log.info("=== available BEs ===");
+				for (String s: availableBEs) {
+					log.info(s);
+				}
+
 				int num = availableBEs.size();
 				if (num == 0) {
 					// for test only
@@ -173,7 +189,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 						int start = splitSize * i;
 						int end;
 						if (i == num - 1) {
-							end = num;
+							end = n;
 						} else {
 							end = start + splitSize;    // exclusive
 						}
@@ -189,6 +205,9 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 						NodeInfo currInfo = Coordinator.nodeMap.get(availableBEs.get(i));
 						currInfo.setBusy(true);
 						currInfo.addLoad(splitSize, (short)1);
+
+						// for test only
+						log.info("checking offload to BE " + i + ": " + addresses[i][0] + " " + addresses[i][1]);
 
 						List<Boolean> subResult = client.checkPassword(subPassword, subHash);
 						result.addAll(subResult);
@@ -224,7 +243,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 							end = start + batchSize - 1;
 						}
 						log.info("multi-threaded checking on BE - part " + i);
-						new CheckTask(passwordArray, hashArray, start, end, res, latch);
+						new Thread(new CheckTask(passwordArray, hashArray, start, end, res, latch)).start();
 					}
 					latch.await();
 				}
@@ -234,6 +253,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 			return new ArrayList<>(Arrays.asList(res));
 
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new IllegalArgument(e.getMessage());
 		}
 	}
