@@ -98,10 +98,10 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 				// set BE to busy and add load
 //				String host = InetAddress.getLocalHost().getHostName();
 
-				// for test only
-				log.info("hashing on BE!");
-
 				if (n < BE_MULTI_THREAD_THRESHOLD) {
+					// for test only
+					log.info("single-threader hashing on BE!");
+
 					hashPasswordHelper(input, logRounds, 0, n - 1, res);
 				} else {
 					// for test only
@@ -117,6 +117,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 						} else {
 							end = start + batchSize - 1;
 						}
+						log.info("multi-threaded hashing on BE - part " + i);
 						new HashTask(input, logRounds, start, end, res, latch);
 					}
 					latch.await();
@@ -203,10 +204,10 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 				// set BE to busy and add load
 //				String host = InetAddress.getLocalHost().getHostName();
 
-				// for test only
-				log.info("checking on BE!");
-
 				if (n < BE_MULTI_THREAD_THRESHOLD) {
+					// for test only
+					log.info("single-threaded checking on BE!");
+
 					checkPasswordHelper(passwordArray, hashArray, 0, n - 1, res);
 				} else {
 					// for test only
@@ -222,6 +223,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 						} else {
 							end = start + batchSize - 1;
 						}
+						log.info("multi-threaded checking on BE - part " + i);
 						new CheckTask(passwordArray, hashArray, start, end, res, latch);
 					}
 					latch.await();
@@ -300,12 +302,21 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 
 	public void connectFE(String hostBE, int portBE) throws IllegalArgument, org.apache.thrift.TException {
 		// for test only
-		System.out.println("Get connection request from BE node: " + hostBE + ":" + portBE);
+		log.info("Get connection request from BE node: " + hostBE + ":" + portBE);
 
 		try {
 			String address = hostBE + ":" + portBE;
 			if (!Coordinator.containsNode(address)) {
+				log.info("does not contain this node, register it at coordinator");
 				Coordinator.addNode(address, new NodeInfo());
+
+				// for test only
+				int idx = 0;
+				log.info("====== Current NodeMap =====");
+				for (String s: Coordinator.nodeMap.keySet()) {
+					++idx;
+					log.info(idx + ": " + s);
+				}
 			}
 		} catch (Exception e) {
 			throw new IllegalArgument(e.getMessage());

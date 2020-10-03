@@ -52,7 +52,7 @@ public class BENode {
 		/* launch Thrift TThreadPoolServer: uses one thread to accept connections
 		 * and then handles each connection using a dedicated thread
 		 */
-		BcryptService.Processor<BcryptService.Iface> processor = new BcryptService.Processor<BcryptService.Iface>(new BcryptServiceHandler(true));
+		BcryptService.Processor<BcryptService.Iface> processor = new BcryptService.Processor<BcryptService.Iface>(new BcryptServiceHandler(false));
 		TServerSocket socket = new TServerSocket(portBE);
 		TThreadPoolServer.Args sargs = new TThreadPoolServer.Args(socket);
 		sargs.protocolFactory(new TBinaryProtocol.Factory());
