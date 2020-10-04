@@ -70,14 +70,16 @@ public class Client2 {
                 TTransport transport = new TFramedTransport(sock);
                 TProtocol protocol = new TBinaryProtocol(transport);
                 BcryptService.Client client = new BcryptService.Client(protocol);
-                transport.open();
+                if (!transport.isOpen()) {
+                    transport.open();
+                }
 
                 for (int i = 0; i < NUM_OF_REQUESTS_PER_THREAD; ++i) {
                     List<String> passwords = ClientUtility.genPasswords(LEN_OF_CHARS_PER_PASSWORD, NUM_OF_PASSWORDS_PER_REQUEST);
 
                     long startTime = System.currentTimeMillis();
 
-                    semaphore.acquire();
+//                    semaphore.acquire();
                     List<String> hashes = client.hashPassword(passwords, LOG_ROUNDS);
 
                     long endTime = System.currentTimeMillis();
@@ -86,7 +88,7 @@ public class Client2 {
 
                     // Check correctness
                     List<Boolean> result = client.checkPassword(passwords, hashes);
-                    semaphore.release();
+//                    semaphore.release();
 
                     boolean succeed = true;
                     for (Boolean b: result) {
@@ -99,8 +101,6 @@ public class Client2 {
                 }
                 latch.countDown();
             } catch (TException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }

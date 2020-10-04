@@ -92,7 +92,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 							transport.open();
 						}
 
-//						semaphores[i].acquire();
+						semaphores[i].acquire();
 						NodeInfo currInfo = Coordinator.nodeMap.get(availableBEs.get(i));
 						currInfo.setBusy(true);
 						currInfo.addLoad(splitSize, logRounds);
@@ -105,7 +105,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 
 						currInfo.setBusy(false);
 						currInfo.subLoad(splitSize, logRounds);
-//						semaphores[i].release();
+						semaphores[i].release();
 
 //						transport.close();
 					}

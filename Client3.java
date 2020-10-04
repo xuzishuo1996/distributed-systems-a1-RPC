@@ -77,7 +77,7 @@ public class Client3 {
 
                     long startTime = System.currentTimeMillis();
 
-                    semaphore.acquire();
+//                    semaphore.acquire();
                     List<String> hashes = client.hashPassword(passwords, LOG_ROUNDS);
 
                     long endTime = System.currentTimeMillis();
@@ -86,7 +86,7 @@ public class Client3 {
 
                     // Check correctness
                     List<Boolean> result = client.checkPassword(passwords, hashes);
-                    semaphore.release();
+//                    semaphore.release();
 
                     boolean succeed = true;
                     for (Boolean b: result) {
@@ -99,8 +99,6 @@ public class Client3 {
                 }
                 latch.countDown();
             } catch (TException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
