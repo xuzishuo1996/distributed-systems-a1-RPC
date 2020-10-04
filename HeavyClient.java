@@ -18,8 +18,17 @@ public class HeavyClient {
             transport.open();
 
             for (int i = 0; i < 3; ++i) {
-                List<String> password = genPasswordList();
-                List<String> hash = client.hashPassword(password, (short)10);
+                int n = 16;
+                short logRounds = 10;
+                List<String> password = genPasswordList(16);
+
+                long startTime = System.currentTimeMillis();
+
+                List<String> hash = client.hashPassword(password, logRounds);
+
+                long endTime = System.currentTimeMillis();
+                System.out.println("Throughput for logRounds=" + logRounds + ": " + n * 1000f/(endTime-startTime));
+                System.out.println("Latency for logRounds=" + logRounds + ": " + (endTime-startTime)/n);
 
                 boolean succeed = true;
                 List<Boolean> result = client.checkPassword(password, hash);
@@ -38,11 +47,11 @@ public class HeavyClient {
         }
     }
 
-    public static List<String> genPasswordList() {
+    public static List<String> genPasswordList(int n) {
         Random rand = new Random();
         List<String> l = new ArrayList<>(1024);
         String someBigPassword = "faldskfjalkdsjfalkfdjasfoeiurqoeueoirqueroqiewurewqodfnmdsalkfjdsalkfjaslkfajflasdjfadslfkajdflkjfdalkadfjlkdfjfadsflkjafaldskfjalkdsjfalkfdjasfoeiurqoeueoirqueroqiewurewqodfnmdsalkfjdsalkfjaslkfajflasdjfadslfkajdflkjfdalkadfjlkdfjfadsflkjafaldskfjalkdsjfalkfdjasfoeiurqoeueoirqueroqiewurewqodfnmdsalkfjdsalkfjaslkfajflasdjfadslfkajdflkjfdalkadfjlkdfjfadsflkjafaldskfjalkdsjfalkfdjasfoeiurqoeueoirqueroqiewurewqodfnmdsalkfjdsalkfjaslkfajflasdjfadslfkajdflkjfdalkadfjlkdfjfadsflkjafaldskfjalkdsjfalkfdjasfoeiurqoeueoirqueroqiewurewqodfnmdsalkfjdsalkfjaslkfajflasdjfadslfkajdflkjfdalkadfjlkdfjfadsflkjafaldskfjalkdsjfalkfdjasfoeiurqoeueoirqueroqiewurewqodfnmdsalkfjdsalkfjaslkfajflasdjfadslfkajdflkjfdalkadfjlkdfjfadsflkjafaldskfjalkdsjfalkfdjasfoeiurqoeueoirqueroqiewurewqodfnmdsalkfjdsalkfjaslkfajflasdjfadslfkajdflkjfdalkadfjlkdfjfadsflkjafaldskfjalkdsjfalkfdjasfoeiurqoeueoirqueroqiewurewqodfnmdsalkfjdsalkfjaslkfajflasdjfadslfkajdflkjfdalkadfjlkdfjfadsflkjafaldskfjalkdsjfalkfdjasfoeiurqoeueoirqueroqiewurvcvmvcmdoiZZ";
-        for (int i = 0; i < 16; i++) {
+        for (int i = 0; i < n; i++) {
             l.add(someBigPassword + rand.nextInt(10));
         }
         return l;
