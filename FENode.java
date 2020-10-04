@@ -36,8 +36,8 @@ public class FENode {
 		sargs.protocolFactory(new TBinaryProtocol.Factory());
 		sargs.transportFactory(new TFramedTransport.Factory());
 		sargs.processorFactory(new TProcessorFactory(processor));
-		sargs.maxWorkerThreads(16);	//TODO: how to determine the maxWorker size?
-		TServer server = new THsHaServer(sargs);
+		sargs.maxWorkerThreads(20);	//TODO: how to determine the maxWorker size?
+		THsHaServer server = new THsHaServer(sargs);
 		server.serve();
     }
 }

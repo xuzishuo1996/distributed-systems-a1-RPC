@@ -19,10 +19,10 @@ public class Client2 {
     static Logger log;
 
     private static final int LEN_OF_CHARS_PER_PASSWORD = 128;
-    private static final int NUM_OF_PASSWORDS_PER_REQUEST = 1;
+    private static final int NUM_OF_PASSWORDS_PER_REQUEST = 4;
     private static final short LOG_ROUNDS = 10;
-    private static final int NUM_OF_REQUESTS_PER_THREAD = 3;   //no interval between requests in a single thread
-    private static final int NUM_OF_THREADS = 16;
+    private static final int NUM_OF_REQUESTS_PER_THREAD = 5;   //no interval between requests in a single thread
+    private static final int NUM_OF_THREADS = 4;
 
     private static CountDownLatch latch;
 
@@ -34,36 +34,42 @@ public class Client2 {
         latch = new CountDownLatch(NUM_OF_THREADS);
 
         try {
-            TSocket sock = new TSocket(args[0], Integer.parseInt(args[1]));
-            TTransport transport = new TFramedTransport(sock);
-            TProtocol protocol = new TBinaryProtocol(transport);
-            BcryptService.Client client = new BcryptService.Client(protocol);
-            transport.open();
+//            TSocket sock = new TSocket(args[0], Integer.parseInt(args[1]));
+//            TTransport transport = new TFramedTransport(sock);
+//            TProtocol protocol = new TBinaryProtocol(transport);
+//            BcryptService.Client client = new BcryptService.Client(protocol);
+//            transport.open();
 
             for (int i = 0; i < NUM_OF_THREADS; ++i) {
-                exec.submit(new Task(client));
+                exec.execute(new Task(args[0], Integer.parseInt(args[1])));
             }
 
             latch.await();
-
+            exec.shutdown();
 //            transport.close();
         } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (TException e) {
             e.printStackTrace();
         }
     }
 
     static class Task implements Runnable {
-        private final BcryptService.Client client;
+        private final String hostFE;
+        private final int portFE;
 
-        Task(BcryptService.Client client) {
-            this.client = client;
+        Task(String hostFE, int portFE) {
+            this.hostFE = hostFE;
+            this.portFE = portFE;
         }
 
         @Override
         public void run() {
             try {
+                TSocket sock = new TSocket(hostFE, portFE);
+                TTransport transport = new TFramedTransport(sock);
+                TProtocol protocol = new TBinaryProtocol(transport);
+                BcryptService.Client client = new BcryptService.Client(protocol);
+                transport.open();
+
                 for (int i = 0; i < NUM_OF_REQUESTS_PER_THREAD; ++i) {
                     List<String> passwords = ClientUtility.genPasswords(LEN_OF_CHARS_PER_PASSWORD, NUM_OF_PASSWORDS_PER_REQUEST);
 
