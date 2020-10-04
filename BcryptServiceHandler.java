@@ -80,11 +80,12 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 						}
 						List<String> subList = password.subList(start, end);
 
-						TSocket sock = new TSocket(addresses[i][0], Integer.parseInt(addresses[i][1]));
-						TTransport transport = new TFramedTransport(sock);
-						TProtocol protocol = new TBinaryProtocol(transport);
-						BcryptService.Client client = new BcryptService.Client(protocol);
-						transport.open();
+						NodeInfo info = Coordinator.nodeMap.get(availableBEs.get(i));
+						TTransport transport = info.getTransport();
+						BcryptService.Client client = info.getClient();
+						if (!transport.isOpen()) {
+							transport.open();
+						}
 
 						NodeInfo currInfo = Coordinator.nodeMap.get(availableBEs.get(i));
 						currInfo.setBusy(true);
@@ -98,7 +99,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 
 						currInfo.setBusy(false);
 						currInfo.subLoad(splitSize, logRounds);
-						transport.close();
+//						transport.close();
 					}
 					return result;
 				}
@@ -196,11 +197,12 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 						List<String> subPassword = password.subList(start, end);
 						List<String> subHash = hash.subList(start, end);
 
-						TSocket sock = new TSocket(addresses[i][0], Integer.parseInt(addresses[i][1]));
-						TTransport transport = new TFramedTransport(sock);
-						TProtocol protocol = new TBinaryProtocol(transport);
-						BcryptService.Client client = new BcryptService.Client(protocol);
-						transport.open();
+						NodeInfo info = Coordinator.nodeMap.get(availableBEs.get(i));
+						TTransport transport = info.getTransport();
+						BcryptService.Client client = info.getClient();
+						if (!transport.isOpen()) {
+							transport.open();
+						}
 
 						NodeInfo currInfo = Coordinator.nodeMap.get(availableBEs.get(i));
 						currInfo.setBusy(true);
@@ -214,7 +216,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 
 						currInfo.setBusy(false);
 						currInfo.subLoad(splitSize, (short)1);
-						transport.close();
+//						transport.close();
 					}
 					return result;
 				}
@@ -328,7 +330,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 			String address = hostBE + ":" + portBE;
 			if (!Coordinator.containsNode(address)) {
 				log.info("does not contain this node, register it at coordinator");
-				Coordinator.addNode(address, new NodeInfo());
+				Coordinator.addNode(address, new NodeInfo(hostBE, portBE));
 
 				// for test only
 				int idx = 0;
