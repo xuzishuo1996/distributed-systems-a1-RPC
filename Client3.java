@@ -13,24 +13,24 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 
-public class Client2 {
+public class Client3 {
     /*  1 client thread, 16 passwords per request,
         logRounds = 10.
      */
     static Logger log;
 
     private static final int LEN_OF_CHARS_PER_PASSWORD = 128;
-    private static final int NUM_OF_PASSWORDS_PER_REQUEST = 1;
+    private static final int NUM_OF_PASSWORDS_PER_REQUEST = 4;
     private static final short LOG_ROUNDS = 10;
     private static final int NUM_OF_REQUESTS_PER_THREAD = 5;   //no interval between requests in a single thread
-    private static final int NUM_OF_THREADS = 16;
+    private static final int NUM_OF_THREADS = 4;
 
     private static CountDownLatch latch;
     private static Semaphore semaphore = new Semaphore(1);
 
     public static void main(String [] args) {
         BasicConfigurator.configure();
-        log = org.apache.log4j.Logger.getLogger(Client2.class.getName());
+        log = org.apache.log4j.Logger.getLogger(Client3.class.getName());
 
         ExecutorService exec = Executors.newFixedThreadPool(NUM_OF_THREADS);
         latch = new CountDownLatch(NUM_OF_THREADS);
@@ -106,5 +106,6 @@ public class Client2 {
         }
     }
 }
+
 
 

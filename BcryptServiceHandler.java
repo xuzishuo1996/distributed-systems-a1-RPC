@@ -3,6 +3,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Semaphore;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
@@ -20,13 +21,17 @@ import org.mindrot.jbcrypt.BCrypt;
 public class BcryptServiceHandler implements BcryptService.Iface {
 	private final boolean isFE;
 	private final static int BE_WORKER_THREADS_NUM = 2;
-	private final static int BE_MULTI_THREAD_THRESHOLD = 4;		// should be greater than BE_WORKER_THREADS_NUM
+	private final static int BE_MULTI_THREAD_THRESHOLD = 2;		// should be greater than BE_WORKER_THREADS_NUM
 	private final Logger log;
+
+	private Semaphore[] semaphores;	// hardcode it to 2 because at most 2 BE nodes for grading
 
 	public BcryptServiceHandler(boolean isFE) {
 		this.isFE = isFE;
 		BasicConfigurator.configure();
 		log = Logger.getLogger(BcryptServiceHandler.class.getName());
+		semaphores = new Semaphore[2];
+		Arrays.fill(semaphores, new Semaphore(1));
 	}
 
 	public List<String> hashPassword(List<String> password, short logRounds) throws IllegalArgument, org.apache.thrift.TException
@@ -87,6 +92,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 							transport.open();
 						}
 
+//						semaphores[i].acquire();
 						NodeInfo currInfo = Coordinator.nodeMap.get(availableBEs.get(i));
 						currInfo.setBusy(true);
 						currInfo.addLoad(splitSize, logRounds);
@@ -99,6 +105,8 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 
 						currInfo.setBusy(false);
 						currInfo.subLoad(splitSize, logRounds);
+//						semaphores[i].release();
+
 //						transport.close();
 					}
 					return result;
@@ -110,7 +118,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 
 				if (n < BE_MULTI_THREAD_THRESHOLD) {
 					// for test only
-					log.info("single-threader hashing on BE!");
+					log.info("single-threaded hashing on BE!");
 
 					hashPasswordHelper(input, logRounds, 0, n - 1, res);
 				} else {
