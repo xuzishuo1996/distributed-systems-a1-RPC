@@ -1,5 +1,6 @@
 import org.apache.thrift.async.AsyncMethodCallback;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -47,7 +48,8 @@ public class HashAsyncClient implements Callable<List<String>> {
             // for test only
             System.out.println("hashing offload to BE " + i + ": " + address[0] + " " + address[1]);
 
-            List<String> subResult = client.hashPassword(subList, logRounds, new HashCallback());
+            List<String> subResult = new ArrayList<>();
+            client.hashPassword(subList, logRounds, new HashCallback(subResult));
 
             currInfo.setBusy(false);
             currInfo.subLoad(splitSize, logRounds);
@@ -57,10 +59,18 @@ public class HashAsyncClient implements Callable<List<String>> {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return null;
     }
 
-    class HashCallback implements AsyncMethodCallback<Void> {
-        public void onComplete(Void arg) {
+    class HashCallback implements AsyncMethodCallback<List<String>> {
+        private List<String> subResult;
+
+        public HashCallback(List<String> subResult) {
+            this.subResult = subResult;
+        }
+
+        public void onComplete(List<String> response) {
+            this.subResult = response;
             latch.countDown();
         }
 
