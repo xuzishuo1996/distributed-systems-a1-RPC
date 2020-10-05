@@ -1,0 +1,2 @@
+public class CheckAsyncClient {
+}

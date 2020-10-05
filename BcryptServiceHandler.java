@@ -1,17 +1,11 @@
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.*;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
-import org.apache.thrift.TException;
-import org.apache.thrift.protocol.TBinaryProtocol;
-import org.apache.thrift.protocol.TProtocol;
-import org.apache.thrift.transport.TFramedTransport;
-import org.apache.thrift.transport.TSocket;
+import org.apache.thrift.async.AsyncMethodCallback;
 import org.apache.thrift.transport.TTransport;
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -71,43 +65,17 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 					hashPasswordHelper(input, logRounds, 0, n - 1, res);
 					return new ArrayList<>(Arrays.asList(res));
 				} else {
-					List<String> result = new ArrayList<>();
-					String[][] addresses = new String[num][2];
-					int splitSize = n / num;
-					for (int i = 0; i < num; ++i) {
-						addresses[i] = availableBEs.get(i).split(":");
-						int start = splitSize * i;
-						int end;
-						if (i == num - 1) {
-							end = n;
-						} else {
-							end = start + splitSize;    // exclusive
-						}
-						List<String> subList = password.subList(start, end);
+					ExecutorService exec = Executors.newFixedThreadPool(2);
 
-						NodeInfo info = Coordinator.nodeMap.get(availableBEs.get(i));
-						synchronized (info) {
-							TTransport transport = info.getTransport();
-							BcryptService.Client client = info.getClient();
-							if (!transport.isOpen()) {
-								transport.open();
-							}
-							
-							NodeInfo currInfo = Coordinator.nodeMap.get(availableBEs.get(i));
-							currInfo.setBusy(true);
-							currInfo.addLoad(splitSize, logRounds);
-
-							// for test only
-							log.info("hashing offload to BE " + i + ": " + addresses[i][0] + " " + addresses[i][1]);
-
-							List<String> subResult = client.hashPassword(subList, logRounds);
-							result.addAll(subResult);
-
-							currInfo.setBusy(false);
-							currInfo.subLoad(splitSize, logRounds);
-						}
-
-//						transport.close();
+					Future<List<String>> subResult1;
+					Future<List<String>> subResult2 = null;
+					subResult1 = exec.submit(new HashAsyncClient(password, logRounds, availableBEs, 0));
+					if (num == 2) {
+						subResult2 = exec.submit(new HashAsyncClient(password, logRounds, availableBEs, 1));
+					}
+					List<String> result = new ArrayList<>(subResult1.get());
+					if (num == 2) {
+						result.addAll(subResult2.get());
 					}
 					return result;
 				}
@@ -207,7 +175,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 
 						NodeInfo info = Coordinator.nodeMap.get(availableBEs.get(i));
 						TTransport transport = info.getTransport();
-						BcryptService.Client client = info.getClient();
+						BcryptService.Client client = info.getAsyncClient();
 						if (!transport.isOpen()) {
 							transport.open();
 						}
