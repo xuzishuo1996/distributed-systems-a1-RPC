@@ -1,3 +1,4 @@
+import org.apache.log4j.Logger;
 import org.apache.thrift.async.AsyncMethodCallback;
 
 import java.util.ArrayList;
@@ -52,6 +53,9 @@ public class HashAsyncClient implements Callable<List<String>> {
 
                 client.hashPassword(subList, logRounds, new HashCallback());
 
+//                // for test only
+//                System.out.println("after hash callback complete");
+
                 currInfo.setBusy(false);
                 currInfo.subLoad(splitSize, logRounds);
 
@@ -67,6 +71,7 @@ public class HashAsyncClient implements Callable<List<String>> {
     class HashCallback implements AsyncMethodCallback<List<String>> {
 
         public void onComplete(List<String> response) {
+//            System.out.println("in onComplete of HashCallback!");
             subResult = response;
             latch.countDown();
         }
