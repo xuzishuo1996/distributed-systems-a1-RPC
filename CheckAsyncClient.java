@@ -13,6 +13,8 @@ public class CheckAsyncClient implements Callable<List<Boolean>> {
 
     private final CountDownLatch latch;
 
+    List<Boolean> subResult;
+
     public CheckAsyncClient(List<String> password, List<String> hash, List<String> availableBEs, int i) {
         this.password = password;
         this.hash = hash;
@@ -49,8 +51,7 @@ public class CheckAsyncClient implements Callable<List<Boolean>> {
             // for test only
             System.out.println("hashing offload to BE " + i + ": " + address[0] + " " + address[1]);
 
-            List<Boolean> subResult = new ArrayList<>();
-            client.checkPassword(subPassword, subHash, new CheckCallback(subResult));
+            client.checkPassword(subPassword, subHash, new CheckCallback());
 
             currInfo.setBusy(false);
             currInfo.subLoad(splitSize, (short)1);
@@ -64,14 +65,9 @@ public class CheckAsyncClient implements Callable<List<Boolean>> {
     }
 
     class CheckCallback implements AsyncMethodCallback<List<Boolean>> {
-        private List<Boolean> subResult;
-
-        public CheckCallback(List<Boolean> subResult) {
-            this.subResult = subResult;
-        }
 
         public void onComplete(List<Boolean> response) {
-            this.subResult = response;
+            subResult = response;
             latch.countDown();
         }
 

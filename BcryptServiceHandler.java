@@ -68,14 +68,21 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 					Future<List<String>> subResult2 = null;
 					subResult1 = exec.submit(new HashAsyncClient(password, logRounds, availableBEs, 0));
 					if (num >= 2) {
-						subResult2 = exec.submit(new HashAsyncClient(password, logRounds, availableBEs, 1));
+						subResult2 = exec.submit(new HashAsyncClient(password, logRounds, availableBEs, 1));;
 					}
+
+					while (!subResult1.isDone());
+					if (num == 2) {
+						while (!subResult2.isDone());
+					}
+
 					List<String> result = new ArrayList<>(subResult1.get());
 					if (num >= 2) {
 						result.addAll(subResult2.get());
 					}
 
 					exec.shutdown();
+					log.info("result: " + result);
 					return result;
 				}
 
@@ -110,6 +117,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 
 				// sub BE's load
 			}
+			log.info("res from BE: " + new ArrayList<>(Arrays.asList(res)));
 			return new ArrayList<>(Arrays.asList(res));
 
 		} catch (Exception e) {
@@ -126,6 +134,8 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 		int n = password.size();
 		try {
 			if (password.size() != hash.size()) {
+				log.info("password.size(): " + password.size());
+				log.info("hash.size(): " + hash.size());
 				throw new IllegalArgument("the length of passwords and hashes does not match");
 			}
 

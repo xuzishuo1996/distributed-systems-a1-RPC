@@ -10,8 +10,9 @@ public class HashAsyncClient implements Callable<List<String>> {
     private final short logRounds;
     private final List<String> availableBEs;
     private final int i;
-
     private final CountDownLatch latch;
+
+    List<String> subResult;
 
     public HashAsyncClient(List<String> password, short logRounds, List<String> availableBEs, int i) {
         this.password = password;
@@ -19,6 +20,8 @@ public class HashAsyncClient implements Callable<List<String>> {
         this.availableBEs = availableBEs;
         this.i = i;
         this.latch = new CountDownLatch(1);
+
+//        subResult = new ArrayList<>();
     }
 
     @Override
@@ -48,8 +51,7 @@ public class HashAsyncClient implements Callable<List<String>> {
             // for test only
             System.out.println("hashing offload to BE " + i + ": " + address[0] + " " + address[1]);
 
-            List<String> subResult = new ArrayList<>();
-            client.hashPassword(subList, logRounds, new HashCallback(subResult));
+            client.hashPassword(subList, logRounds, new HashCallback());
 
             currInfo.setBusy(false);
             currInfo.subLoad(splitSize, logRounds);
@@ -63,14 +65,9 @@ public class HashAsyncClient implements Callable<List<String>> {
     }
 
     class HashCallback implements AsyncMethodCallback<List<String>> {
-        private List<String> subResult;
-
-        public HashCallback(List<String> subResult) {
-            this.subResult = subResult;
-        }
 
         public void onComplete(List<String> response) {
-            this.subResult = response;
+            subResult = response;
             latch.countDown();
         }
 
