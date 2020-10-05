@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 
-public class HashAsyncClient implements Callable<List<String>> {
+public class HashAsyncTask implements Callable<List<String>> {
     private final List<String> password;
     private final short logRounds;
     private final List<String> availableBEs;
@@ -14,7 +14,7 @@ public class HashAsyncClient implements Callable<List<String>> {
 
     List<String> subResult;
 
-    public HashAsyncClient(List<String> password, short logRounds, List<String> availableBEs, int i) {
+    public HashAsyncTask(List<String> password, short logRounds, List<String> availableBEs, int i) {
         this.password = password;
         this.logRounds = logRounds;
         this.availableBEs = availableBEs;

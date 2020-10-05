@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 
-public class CheckAsyncClient implements Callable<List<Boolean>> {
+public class CheckAsyncTask implements Callable<List<Boolean>> {
     private final List<String> password;
     private final List<String> hash;
     private final List<String> availableBEs;
@@ -15,7 +15,7 @@ public class CheckAsyncClient implements Callable<List<Boolean>> {
 
     List<Boolean> subResult;
 
-    public CheckAsyncClient(List<String> password, List<String> hash, List<String> availableBEs, int i) {
+    public CheckAsyncTask(List<String> password, List<String> hash, List<String> availableBEs, int i) {
         this.password = password;
         this.hash = hash;
         this.availableBEs = availableBEs;

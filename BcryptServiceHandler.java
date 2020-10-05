@@ -5,8 +5,6 @@ import java.util.concurrent.*;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
-import org.apache.thrift.async.AsyncMethodCallback;
-import org.apache.thrift.transport.TTransport;
 import org.mindrot.jbcrypt.BCrypt;
 
 public class BcryptServiceHandler implements BcryptService.Iface {
@@ -66,9 +64,9 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 
 					Future<List<String>> subResult1;
 					Future<List<String>> subResult2 = null;
-					subResult1 = exec.submit(new HashAsyncClient(password, logRounds, availableBEs, 0));
+					subResult1 = exec.submit(new HashAsyncTask(password, logRounds, availableBEs, 0));
 					if (num >= 2) {
-						subResult2 = exec.submit(new HashAsyncClient(password, logRounds, availableBEs, 1));;
+						subResult2 = exec.submit(new HashAsyncTask(password, logRounds, availableBEs, 1));;
 					}
 
 					while (!subResult1.isDone());
@@ -171,9 +169,9 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 
 					Future<List<Boolean>> subResult1;
 					Future<List<Boolean>> subResult2 = null;
-					subResult1 = exec.submit(new CheckAsyncClient(password, hash, availableBEs, 0));
+					subResult1 = exec.submit(new CheckAsyncTask(password, hash, availableBEs, 0));
 					if (num >= 2) {
-						subResult2 = exec.submit(new CheckAsyncClient(password, hash, availableBEs, 1));
+						subResult2 = exec.submit(new CheckAsyncTask(password, hash, availableBEs, 1));
 					}
 					List<Boolean> result = new ArrayList<>(subResult1.get());
 					if (num >= 2) {
