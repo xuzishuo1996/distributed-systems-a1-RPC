@@ -6,6 +6,7 @@ import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.server.THsHaServer;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TSimpleServer;
+import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TNonblockingServerSocket;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TFramedTransport;
@@ -30,14 +31,24 @@ public class FENode {
 		log.info("Launching FE node on port " + portFE);
 
 		// launch Thrift THsHaServer: can process multiple requests in parallel
-		BcryptService.Processor<BcryptService.Iface> processor = new BcryptService.Processor<BcryptService.Iface>(new BcryptServiceHandler(true));
-		TNonblockingServerSocket socket = new TNonblockingServerSocket(portFE);
-		THsHaServer.Args sargs = new THsHaServer.Args(socket);
+//		BcryptService.Processor<BcryptService.Iface> processor = new BcryptService.Processor<BcryptService.Iface>(new BcryptServiceHandler(true));
+//		TNonblockingServerSocket socket = new TNonblockingServerSocket(portFE);
+//		THsHaServer.Args sargs = new THsHaServer.Args(socket);
+//		sargs.protocolFactory(new TBinaryProtocol.Factory());
+//		sargs.transportFactory(new TFramedTransport.Factory());
+//		sargs.processorFactory(new TProcessorFactory(processor));
+//		sargs.maxWorkerThreads(20);	//TODO: how to determine the maxWorker size?
+//		THsHaServer server = new THsHaServer(sargs);
+//		server.serve();
+
+		// TThreadPoolServer
+		BcryptService.Processor<BcryptService.Iface> processor = new BcryptService.Processor<BcryptService.Iface>(new BcryptServiceHandler(false));
+		TServerSocket socket = new TServerSocket(portFE);
+		TThreadPoolServer.Args sargs = new TThreadPoolServer.Args(socket);
 		sargs.protocolFactory(new TBinaryProtocol.Factory());
 		sargs.transportFactory(new TFramedTransport.Factory());
 		sargs.processorFactory(new TProcessorFactory(processor));
-		sargs.maxWorkerThreads(20);	//TODO: how to determine the maxWorker size?
-		THsHaServer server = new THsHaServer(sargs);
+		TThreadPoolServer server = new TThreadPoolServer(sargs);
 		server.serve();
     }
 }
