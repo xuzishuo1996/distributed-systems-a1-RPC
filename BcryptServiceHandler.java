@@ -30,8 +30,8 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 			return new ArrayList<>();
 		}
 		try {
-			if (logRounds < 4 || logRounds > 30) {	// 10 - 30
-				throw new IllegalArgument("rounds exceeds maximum (30)");
+			if (logRounds < 4 || logRounds > 30) {	// 4 - 30
+				throw new IllegalArgument("the logRounds argument of hashPassword is out of range");
 			}
 
 //			List<String> ret = new ArrayList<>();
