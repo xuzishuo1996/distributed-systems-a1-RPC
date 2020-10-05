@@ -86,26 +86,26 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 						List<String> subList = password.subList(start, end);
 
 						NodeInfo info = Coordinator.nodeMap.get(availableBEs.get(i));
-						TTransport transport = info.getTransport();
-						BcryptService.Client client = info.getClient();
-						if (!transport.isOpen()) {
-							transport.open();
+						synchronized (info) {
+							TTransport transport = info.getTransport();
+							BcryptService.Client client = info.getClient();
+							if (!transport.isOpen()) {
+								transport.open();
+							}
+							
+							NodeInfo currInfo = Coordinator.nodeMap.get(availableBEs.get(i));
+							currInfo.setBusy(true);
+							currInfo.addLoad(splitSize, logRounds);
+
+							// for test only
+							log.info("hashing offload to BE " + i + ": " + addresses[i][0] + " " + addresses[i][1]);
+
+							List<String> subResult = client.hashPassword(subList, logRounds);
+							result.addAll(subResult);
+
+							currInfo.setBusy(false);
+							currInfo.subLoad(splitSize, logRounds);
 						}
-
-						semaphores[i].acquire();
-						NodeInfo currInfo = Coordinator.nodeMap.get(availableBEs.get(i));
-						currInfo.setBusy(true);
-						currInfo.addLoad(splitSize, logRounds);
-
-						// for test only
-						log.info("hashing offload to BE " + i + ": " + addresses[i][0] + " " + addresses[i][1]);
-
-						List<String> subResult = client.hashPassword(subList, logRounds);
-						result.addAll(subResult);
-
-						currInfo.setBusy(false);
-						currInfo.subLoad(splitSize, logRounds);
-						semaphores[i].release();
 
 //						transport.close();
 					}
