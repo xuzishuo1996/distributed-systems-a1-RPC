@@ -1,7 +1,6 @@
 import org.apache.log4j.Logger;
 import org.apache.thrift.async.AsyncMethodCallback;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -51,16 +50,17 @@ public class HashAsyncClient implements Callable<List<String>> {
                 // for test only
                 System.out.println("hashing offload to BE " + i + ": " + address[0] + " " + address[1]);
 
-                client.hashPassword(subList, logRounds, new HashCallback());
+                client.hashPassword(subList, logRounds, new HashCallback(client));
 
 //                // for test only
 //                System.out.println("after hash callback complete");
+            }
 
                 currInfo.setBusy(false);
                 currInfo.subLoad(splitSize, logRounds);
 
                 latch.await();
-            }
+//            }
             return subResult;
         } catch (Exception e) {
             e.printStackTrace();
@@ -69,11 +69,19 @@ public class HashAsyncClient implements Callable<List<String>> {
     }
 
     class HashCallback implements AsyncMethodCallback<List<String>> {
+        private final BcryptService.AsyncClient client;
+
+        HashCallback(BcryptService.AsyncClient client) {
+            this.client = client;
+        }
 
         public void onComplete(List<String> response) {
-//            System.out.println("in onComplete of HashCallback!");
-            subResult = response;
-            latch.countDown();
+
+            synchronized (client) {
+//                System.out.println("in onComplete of HashCallback!");
+                subResult = response;
+                latch.countDown();
+            }
         }
 
         public void onError(Exception e) {

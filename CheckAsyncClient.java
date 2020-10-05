@@ -1,6 +1,5 @@
 import org.apache.thrift.async.AsyncMethodCallback;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -50,13 +49,13 @@ public class CheckAsyncClient implements Callable<List<Boolean>> {
                 // for test only
                 System.out.println("hashing offload to BE " + i + ": " + address[0] + " " + address[1]);
 
-                client.checkPassword(subPassword, subHash, new CheckCallback());
-
+                client.checkPassword(subPassword, subHash, new CheckCallback(client));
+            }
                 currInfo.setBusy(false);
                 currInfo.subLoad(splitSize, (short) 1);
 
                 latch.await();
-            }
+//            }
             return subResult;
         } catch (Exception e) {
             e.printStackTrace();
@@ -65,10 +64,17 @@ public class CheckAsyncClient implements Callable<List<Boolean>> {
     }
 
     class CheckCallback implements AsyncMethodCallback<List<Boolean>> {
+        private final BcryptService.AsyncClient client;
+
+        CheckCallback(BcryptService.AsyncClient client) {
+            this.client = client;
+        }
 
         public void onComplete(List<Boolean> response) {
-            subResult = response;
-            latch.countDown();
+            synchronized (client) {
+                subResult = response;
+                latch.countDown();
+            }
         }
 
         public void onError(Exception e) {
