@@ -77,6 +77,8 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 					if (num == 2) {
 						result.addAll(subResult2.get());
 					}
+
+					exec.shutdown();
 					return result;
 				}
 
@@ -158,42 +160,20 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 					checkPasswordHelper(passwordArray, hashArray, 0, n - 1, res);
 					return new ArrayList<>(Arrays.asList(res));
 				} else {
-					List<Boolean> result = new ArrayList<>();
-					String[][] addresses = new String[num][2];
-					int splitSize = n / num;
-					for (int i = 0; i < num; ++i) {
-						addresses[i] = availableBEs.get(i).split(":");
-						int start = splitSize * i;
-						int end;
-						if (i == num - 1) {
-							end = n;
-						} else {
-							end = start + splitSize;    // exclusive
-						}
-						List<String> subPassword = password.subList(start, end);
-						List<String> subHash = hash.subList(start, end);
+					ExecutorService exec = Executors.newFixedThreadPool(2);
 
-						NodeInfo info = Coordinator.nodeMap.get(availableBEs.get(i));
-						TTransport transport = info.getTransport();
-						BcryptService.Client client = info.getAsyncClient();
-						if (!transport.isOpen()) {
-							transport.open();
-						}
-
-						NodeInfo currInfo = Coordinator.nodeMap.get(availableBEs.get(i));
-						currInfo.setBusy(true);
-						currInfo.addLoad(splitSize, (short)1);
-
-						// for test only
-						log.info("checking offload to BE " + i + ": " + addresses[i][0] + " " + addresses[i][1]);
-
-						List<Boolean> subResult = client.checkPassword(subPassword, subHash);
-						result.addAll(subResult);
-
-						currInfo.setBusy(false);
-						currInfo.subLoad(splitSize, (short)1);
-//						transport.close();
+					Future<List<Boolean>> subResult1;
+					Future<List<Boolean>> subResult2 = null;
+					subResult1 = exec.submit(new CheckAsyncClient(password, hash, availableBEs, 0));
+					if (num == 2) {
+						subResult2 = exec.submit(new CheckAsyncClient(password, hash, availableBEs, 1));
 					}
+					List<Boolean> result = new ArrayList<>(subResult1.get());
+					if (num == 2) {
+						result.addAll(subResult2.get());
+					}
+
+					exec.shutdown();
 					return result;
 				}
 
