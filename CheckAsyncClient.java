@@ -40,23 +40,23 @@ public class CheckAsyncClient implements Callable<List<Boolean>> {
             List<String> subPassword = password.subList(start, end);
             List<String> subHash = hash.subList(start, end);
 
-            NodeInfo info = Coordinator.nodeMap.get(availableBEs.get(i));
-
-            BcryptService.AsyncClient client = info.getAsyncClient();
-
             NodeInfo currInfo = Coordinator.nodeMap.get(availableBEs.get(i));
-            currInfo.setBusy(true);
-            currInfo.addLoad(splitSize, (short)1);
+            BcryptService.AsyncClient client = currInfo.getAsyncClient();
 
-            // for test only
-            System.out.println("hashing offload to BE " + i + ": " + address[0] + " " + address[1]);
+            synchronized (client) {
+                currInfo.setBusy(true);
+                currInfo.addLoad(splitSize, (short) 1);
 
-            client.checkPassword(subPassword, subHash, new CheckCallback());
+                // for test only
+                System.out.println("hashing offload to BE " + i + ": " + address[0] + " " + address[1]);
 
-            currInfo.setBusy(false);
-            currInfo.subLoad(splitSize, (short)1);
+                client.checkPassword(subPassword, subHash, new CheckCallback());
 
-            latch.await();
+                currInfo.setBusy(false);
+                currInfo.subLoad(splitSize, (short) 1);
+
+                latch.await();
+            }
             return subResult;
         } catch (Exception e) {
             e.printStackTrace();

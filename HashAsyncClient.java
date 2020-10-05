@@ -40,23 +40,23 @@ public class HashAsyncClient implements Callable<List<String>> {
             }
             List<String> subList = password.subList(start, end);
 
-            NodeInfo info = Coordinator.nodeMap.get(availableBEs.get(i));
-
-            BcryptService.AsyncClient client = info.getAsyncClient();
-
             NodeInfo currInfo = Coordinator.nodeMap.get(availableBEs.get(i));
-            currInfo.setBusy(true);
-            currInfo.addLoad(splitSize, logRounds);
+            BcryptService.AsyncClient client = currInfo.getAsyncClient();
 
-            // for test only
-            System.out.println("hashing offload to BE " + i + ": " + address[0] + " " + address[1]);
+            synchronized (client) {
+                currInfo.setBusy(true);
+                currInfo.addLoad(splitSize, logRounds);
 
-            client.hashPassword(subList, logRounds, new HashCallback());
+                // for test only
+                System.out.println("hashing offload to BE " + i + ": " + address[0] + " " + address[1]);
 
-            currInfo.setBusy(false);
-            currInfo.subLoad(splitSize, logRounds);
+                client.hashPassword(subList, logRounds, new HashCallback());
 
-            latch.await();
+                currInfo.setBusy(false);
+                currInfo.subLoad(splitSize, logRounds);
+
+                latch.await();
+            }
             return subResult;
         } catch (Exception e) {
             e.printStackTrace();
