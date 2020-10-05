@@ -15,7 +15,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 	private final static int BE_MULTI_THREAD_THRESHOLD = 2;		// should be greater than BE_WORKER_THREADS_NUM
 	private final Logger log;
 
-	private final static Semaphore[] semaphores = new Semaphore[]{new Semaphore(1), new Semaphore(1)};	// hardcode it to 2 because at most 2 BE nodes for grading
+//	private final static Semaphore[] semaphores = new Semaphore[]{new Semaphore(1), new Semaphore(1)};	// hardcode it to 2 because at most 2 BE nodes for grading
 
 	public BcryptServiceHandler(boolean isFE) {
 		this.isFE = isFE;
@@ -49,15 +49,15 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 				List<String> availableBEs = Coordinator.getAvailableNodes();
 
 				// for test only
-				log.info("=== available BEs ===");
-				for (String s: availableBEs) {
-					log.info(s);
-				}
+				// log.info("=== available BEs ===");
+//				for (String s: availableBEs) {
+//					// log.info(s);
+//				}
 
 				int num = availableBEs.size();
 				if (num == 0) {
 					// for test only
-					log.info("hashing on FE!");
+					// log.info("hashing on FE!");
 
 					hashPasswordHelper(input, logRounds, 0, n - 1, res);
 					return new ArrayList<>(Arrays.asList(res));
@@ -82,7 +82,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 					}
 
 					exec.shutdown();
-					log.info("result: " + result);
+					// log.info("result: " + result);
 					return result;
 				}
 
@@ -92,12 +92,12 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 
 				if (n < BE_MULTI_THREAD_THRESHOLD) {
 					// for test only
-					log.info("single-threaded hashing on BE!");
+					// log.info("single-threaded hashing on BE!");
 
 					hashPasswordHelper(input, logRounds, 0, n - 1, res);
 				} else {
 					// for test only
-					log.info("multi-threaded hashing on BE!");
+					// log.info("multi-threaded hashing on BE!");
 
 					int batchSize = n / BE_WORKER_THREADS_NUM;
 					CountDownLatch latch = new CountDownLatch(BE_WORKER_THREADS_NUM);
@@ -109,7 +109,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 						} else {
 							end = start + batchSize - 1;
 						}
-						log.info("multi-threaded hashing on BE - part " + i);
+						// log.info("multi-threaded hashing on BE - part " + i);
 						new Thread(new HashTask(input, logRounds, start, end, res, latch)).start();
 					}
 					latch.await();
@@ -117,7 +117,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 
 				// sub BE's load
 			}
-			log.info("res from BE: " + new ArrayList<>(Arrays.asList(res)));
+			// log.info("res from BE: " + new ArrayList<>(Arrays.asList(res)));
 			return new ArrayList<>(Arrays.asList(res));
 
 		} catch (Exception e) {
@@ -134,8 +134,8 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 		int n = password.size();
 		try {
 			if (password.size() != hash.size()) {
-				log.info("password.size(): " + password.size());
-				log.info("hash.size(): " + hash.size());
+				// log.info("password.size(): " + password.size());
+				// log.info("hash.size(): " + hash.size());
 				throw new IllegalArgument("the length of passwords and hashes does not match");
 			}
 
@@ -154,15 +154,15 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 				List<String> availableBEs = Coordinator.getAvailableNodes();
 
 				// for test only
-				log.info("=== available BEs ===");
+				// log.info("=== available BEs ===");
 				for (String s: availableBEs) {
-					log.info(s);
+					// log.info(s);
 				}
 
 				int num = availableBEs.size();
 				if (num == 0) {
 					// for test only
-					log.info("checking on FE!");
+					// log.info("checking on FE!");
 
 					checkPasswordHelper(passwordArray, hashArray, 0, n - 1, res);
 					return new ArrayList<>(Arrays.asList(res));
@@ -190,12 +190,12 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 
 				if (n < BE_MULTI_THREAD_THRESHOLD) {
 					// for test only
-					log.info("single-threaded checking on BE!");
+					// log.info("single-threaded checking on BE!");
 
 					checkPasswordHelper(passwordArray, hashArray, 0, n - 1, res);
 				} else {
 					// for test only
-					log.info("multi-threaded checking on BE!");
+					// log.info("multi-threaded checking on BE!");
 
 					int batchSize = n / BE_WORKER_THREADS_NUM;
 					CountDownLatch latch = new CountDownLatch(BE_WORKER_THREADS_NUM);
@@ -207,7 +207,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 						} else {
 							end = start + batchSize - 1;
 						}
-						log.info("multi-threaded checking on BE - part " + i);
+//						// log.info("multi-threaded checking on BE - part " + i);
 						new Thread(new CheckTask(passwordArray, hashArray, start, end, res, latch)).start();
 					}
 					latch.await();
@@ -286,22 +286,22 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 	}
 
 	public void connectFE(String hostBE, int portBE) throws IllegalArgument, org.apache.thrift.TException {
-		// for test only
-		log.info("Get connection request from BE node: " + hostBE + ":" + portBE);
+//		// for test only
+//		// log.info("Get connection request from BE node: " + hostBE + ":" + portBE);
 
 		try {
 			String address = hostBE + ":" + portBE;
 			if (!Coordinator.containsNode(address)) {
-				log.info("does not contain this node, register it at coordinator");
+//				// log.info("does not contain this node, register it at coordinator");
 				Coordinator.addNode(address, new NodeInfo(hostBE, portBE));
 
-				// for test only
-				int idx = 0;
-				log.info("====== Current NodeMap =====");
-				for (String s: Coordinator.nodeMap.keySet()) {
-					++idx;
-					log.info(idx + ": " + s);
-				}
+//				// for test only
+//				int idx = 0;
+//				// log.info("====== Current NodeMap =====");
+//				for (String s: Coordinator.nodeMap.keySet()) {
+//					++idx;
+//					// log.info(idx + ": " + s);
+//				}
 			}
 		} catch (Exception e) {
 			throw new IllegalArgument(e.getMessage());

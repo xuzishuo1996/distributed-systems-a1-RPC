@@ -47,8 +47,8 @@ public class CheckAsyncClient implements Callable<List<Boolean>> {
                 currInfo.setBusy(true);
                 currInfo.addLoad(splitSize, (short) 1);
 
-                // for test only
-                System.out.println("hashing offload to BE " + i + ": " + address[0] + " " + address[1]);
+//                // for test only
+//                System.out.println("hashing offload to BE " + i + ": " + address[0] + " " + address[1]);
 
                 client.checkPassword(subPassword, subHash, new CheckCallback());
 

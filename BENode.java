@@ -28,7 +28,7 @@ public class BENode {
 		String hostBE = getHostName();
 		int portFE = Integer.parseInt(args[1]);
 		int portBE = Integer.parseInt(args[2]);
-		log.info("Launching BE node on port " + portBE + " at host " + getHostName());
+//		log.info("Launching BE node on port " + portBE + " at host " + getHostName());
 
 		// connect to the FE node
 		TSocket sock = new TSocket(hostFE, portFE);

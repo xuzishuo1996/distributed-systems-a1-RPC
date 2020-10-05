@@ -25,7 +25,7 @@ public class FENode {
 		log = Logger.getLogger(FENode.class.getName());
 
 		int portFE = Integer.parseInt(args[0]);
-		log.info("Launching FE node on port " + portFE);
+//		log.info("Launching FE node on port " + portFE);
 
 		// launch Thrift THsHaServer: can process multiple requests in parallel
 //		BcryptService.Processor<BcryptService.Iface> processor = new BcryptService.Processor<BcryptService.Iface>(new BcryptServiceHandler(true));

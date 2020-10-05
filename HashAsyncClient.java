@@ -47,8 +47,8 @@ public class HashAsyncClient implements Callable<List<String>> {
                 currInfo.setBusy(true);
                 currInfo.addLoad(splitSize, logRounds);
 
-                // for test only
-                System.out.println("hashing offload to BE " + i + ": " + address[0] + " " + address[1]);
+//                // for test only
+//                System.out.println("hashing offload to BE " + i + ": " + address[0] + " " + address[1]);
 
                 client.hashPassword(subList, logRounds, new HashCallback());
 
