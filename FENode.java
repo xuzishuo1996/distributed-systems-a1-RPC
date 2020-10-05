@@ -11,9 +11,6 @@ import org.apache.thrift.transport.TNonblockingServerSocket;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TFramedTransport;
 
-//import genJava.BcryptService;
-//import genJava.IllegalArgument;
-
 public class FENode {
 	static Logger log;
 
@@ -42,12 +39,13 @@ public class FENode {
 //		server.serve();
 
 		// TThreadPoolServer
-		BcryptService.Processor<BcryptService.Iface> processor = new BcryptService.Processor<BcryptService.Iface>(new BcryptServiceHandler(false));
+		BcryptService.Processor<BcryptService.Iface> processor = new BcryptService.Processor<BcryptService.Iface>(new BcryptServiceHandler(true));
 		TServerSocket socket = new TServerSocket(portFE);
 		TThreadPoolServer.Args sargs = new TThreadPoolServer.Args(socket);
 		sargs.protocolFactory(new TBinaryProtocol.Factory());
 		sargs.transportFactory(new TFramedTransport.Factory());
 		sargs.processorFactory(new TProcessorFactory(processor));
+		sargs.maxWorkerThreads(32);
 		TThreadPoolServer server = new TThreadPoolServer(sargs);
 		server.serve();
     }

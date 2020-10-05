@@ -9,9 +9,6 @@ import org.apache.thrift.async.AsyncMethodCallback;
 import org.apache.thrift.transport.TTransport;
 import org.mindrot.jbcrypt.BCrypt;
 
-//import genJava.BcryptService;
-//import genJava.IllegalArgument;
-
 public class BcryptServiceHandler implements BcryptService.Iface {
 	private final boolean isFE;
 	private final static int BE_WORKER_THREADS_NUM = 2;
@@ -70,11 +67,11 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 					Future<List<String>> subResult1;
 					Future<List<String>> subResult2 = null;
 					subResult1 = exec.submit(new HashAsyncClient(password, logRounds, availableBEs, 0));
-					if (num == 2) {
+					if (num >= 2) {
 						subResult2 = exec.submit(new HashAsyncClient(password, logRounds, availableBEs, 1));
 					}
 					List<String> result = new ArrayList<>(subResult1.get());
-					if (num == 2) {
+					if (num >= 2) {
 						result.addAll(subResult2.get());
 					}
 
@@ -165,11 +162,11 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 					Future<List<Boolean>> subResult1;
 					Future<List<Boolean>> subResult2 = null;
 					subResult1 = exec.submit(new CheckAsyncClient(password, hash, availableBEs, 0));
-					if (num == 2) {
+					if (num >= 2) {
 						subResult2 = exec.submit(new CheckAsyncClient(password, hash, availableBEs, 1));
 					}
 					List<Boolean> result = new ArrayList<>(subResult1.get());
-					if (num == 2) {
+					if (num >= 2) {
 						result.addAll(subResult2.get());
 					}
 

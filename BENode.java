@@ -11,9 +11,6 @@ import org.apache.thrift.server.TSimpleServer;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.*;
 
-//import genJava.BcryptService;
-//import genJava.IllegalArgument;
-
 public class BENode {
 	static Logger log;
 
@@ -69,7 +66,7 @@ public class BENode {
 		sargs.protocolFactory(new TBinaryProtocol.Factory());
 		sargs.transportFactory(new TFramedTransport.Factory());
 		sargs.processorFactory(new TProcessorFactory(processor));
-		sargs.maxWorkerThreads(20);	//TODO: how to determine the maxWorker size?
+		sargs.maxWorkerThreads(32);	//TODO: how to determine the maxWorker size?
 		THsHaServer server = new THsHaServer(sargs);
 		server.serve();
 	}

@@ -9,15 +9,12 @@ import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TTransportFactory;
 
-//import genJava.BcryptService;
-//import genJava.IllegalArgument;
-
 public class Client {
 	public static void main(String [] args) {
-		if (args.length < 3) {
-			System.err.println("Usage: java Client FE_host FE_port passwords");
-			System.exit(-1);
-		}
+//		if (args.length < 3) {
+//			System.err.println("Usage: java Client FE_host FE_port passwords");
+//			System.exit(-1);
+//		}
 
 		try {
 			TSocket sock = new TSocket(args[0], Integer.parseInt(args[1]));
@@ -26,26 +23,42 @@ public class Client {
 			BcryptService.Client client = new BcryptService.Client(protocol);
 			transport.open();
 
-			List<String> passwords = new ArrayList<>();
-			for (int i = 3; i < args.length; ++i) {
-				passwords.add(args[i]);
-			}
-			List<String> hashes = client.hashPassword(passwords, (short)10);
-			List<Boolean> result = client.checkPassword(passwords, hashes);
-			boolean match = true;
-			for (Boolean b: result) {
-				match = b;
-			}
-			System.out.println("Should be true: " + match);
+			List<String> passwords = ClientUtility.genPasswords(128, 8);
+//			List<String> hashes = client.hashPassword(passwords, (short)10);
+//			List<Boolean> result = client.checkPassword(passwords, hashes);
+//			boolean match = true;
+//			for (Boolean b: result) {
+//				match = b;
+//			}
+//			System.out.println("Should be true: " + match);
+
 
 			/* IllegalArgument Tests */
-//			// Test1: Too many rounds: passed
-//			List<String> hash = client.hashPassword(password, (short)50);
-//			// Test2: passwords and hashes length does not match: passed
-//			List<String> hash = client.hashPassword(password, (short)10);
-//			System.out.println("Before removing a hash: " + client.checkPassword(password, hash));
+//			// Test 1: Too many rounds: passed
+//			List<String> hash = client.hashPassword(passwords, (short)50);
+//			// Test 2: passwords and hashes length does not match: passed
+//			List<String> hash = client.hashPassword(passwords, (short)10);
+//			System.out.println("Before removing a hash: " + client.checkPassword(passwords, hash));
 //			hash.remove(hash.size() - 1);
-//			client.checkPassword(password, hash);
+//			client.checkPassword(passwords, hash);
+
+//			// Test 3: empty list test - should not throw exception
+//			passwords = new ArrayList<>();
+//			List<String> hashes = client.hashPassword(passwords, (short)10);
+//			System.out.println("empty list hash is: " + hashes);
+//			List<Boolean> res = client.checkPassword(passwords, hashes);
+//			System.out.println("empty list check result is: " + res);
+
+			// Test 4: list with empty password check - should not throw exception
+			passwords.add("");
+			List<String> hashes = client.hashPassword(passwords, (short)10);
+			List<Boolean> result = client.checkPassword(passwords, hashes);
+			System.out.println("list with empty password check result: " + result);
+//			boolean match = true;
+//			for (Boolean b: result) {
+//				match = b;
+//			}
+//			System.out.println("Should be true: " + match);
 
 			transport.close();
 		} catch (TException x) {
