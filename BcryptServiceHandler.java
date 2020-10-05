@@ -24,14 +24,14 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 	private final static int BE_MULTI_THREAD_THRESHOLD = 2;		// should be greater than BE_WORKER_THREADS_NUM
 	private final Logger log;
 
-	private Semaphore[] semaphores;	// hardcode it to 2 because at most 2 BE nodes for grading
+	private final static Semaphore[] semaphores = new Semaphore[]{new Semaphore(1), new Semaphore(1)};	// hardcode it to 2 because at most 2 BE nodes for grading
 
 	public BcryptServiceHandler(boolean isFE) {
 		this.isFE = isFE;
 		BasicConfigurator.configure();
 		log = Logger.getLogger(BcryptServiceHandler.class.getName());
-		semaphores = new Semaphore[2];
-		Arrays.fill(semaphores, new Semaphore(1));
+//		semaphores = new Semaphore[2];
+//		Arrays.fill(semaphores, new Semaphore(1));
 	}
 
 	public List<String> hashPassword(List<String> password, short logRounds) throws IllegalArgument, org.apache.thrift.TException
