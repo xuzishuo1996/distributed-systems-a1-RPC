@@ -229,7 +229,11 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 	public void checkPasswordHelper(String[] password, String[] hash, int start, int end, Boolean[] res)
 	{
 		for (int i = start; i <= end; ++i) {	// end: inclusive
-			res[i] = BCrypt.checkpw(password[i], hash[i]);
+			try {
+				res[i] = BCrypt.checkpw(password[i], hash[i]);
+			} catch (Exception e) {
+				res[i] = false;
+			}
 		}
 	}
 
