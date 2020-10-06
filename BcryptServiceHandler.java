@@ -69,10 +69,10 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 						subResult2 = exec.submit(new HashAsyncTask(password, logRounds, availableBEs, 1));;
 					}
 
-					while (!subResult1.isDone());
-					if (num == 2) {
-						while (!subResult2.isDone());
-					}
+//					while (!subResult1.isDone());
+//					if (num == 2) {
+//						while (!subResult2.isDone());
+//					}
 
 					List<String> result = new ArrayList<>(subResult1.get());
 					if (num >= 2) {
@@ -120,6 +120,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 
 		} catch (Exception e) {
 			e.printStackTrace();
+			return new ArrayList<>();
 		}
 	}
 
@@ -216,6 +217,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 
 		} catch (Exception e) {
 			e.printStackTrace();
+			return new ArrayList<>();
 		}
 	}
 
