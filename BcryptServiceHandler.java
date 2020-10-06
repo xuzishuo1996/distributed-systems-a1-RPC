@@ -147,22 +147,23 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 							Future<List<Boolean>> result = exec.submit(new CheckAsyncTask(password, hash, availableBEs.subList(idx, idx + 1), 0));
 							return result.get();
 						}
-					}
-					ExecutorService exec = Executors.newFixedThreadPool(2);
+					} else {
+						ExecutorService exec = Executors.newFixedThreadPool(2);
 
-					Future<List<Boolean>> subResult1;
-					Future<List<Boolean>> subResult2 = null;
-					subResult1 = exec.submit(new CheckAsyncTask(password, hash, availableBEs, 0));
-					if (num >= 2) {
-						subResult2 = exec.submit(new CheckAsyncTask(password, hash, availableBEs, 1));
-					}
-					List<Boolean> result = new ArrayList<>(subResult1.get());
-					if (num >= 2) {
-						result.addAll(subResult2.get());
-					}
+						Future<List<Boolean>> subResult1;
+						Future<List<Boolean>> subResult2 = null;
+						subResult1 = exec.submit(new CheckAsyncTask(password, hash, availableBEs, 0));
+						if (num >= 2) {
+							subResult2 = exec.submit(new CheckAsyncTask(password, hash, availableBEs, 1));
+						}
+						List<Boolean> result = new ArrayList<>(subResult1.get());
+						if (num >= 2) {
+							result.addAll(subResult2.get());
+						}
 
-					exec.shutdown();
-					return result;
+						exec.shutdown();
+						return result;
+					}
 				}
 
 			} else {
