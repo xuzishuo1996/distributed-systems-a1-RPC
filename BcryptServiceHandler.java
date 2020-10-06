@@ -44,7 +44,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 			String[] input = password.toArray(new String[0]);
 			String[] res = new String[n];
 			if (isFE) {
-				List<String> availableBEs = Coordinator.getAvailableNodes();
+//				List<String> availableBEs = Coordinator.getAvailableNodes();
 
 				// for test only
 				// log.info("=== available BEs ===");
@@ -52,7 +52,8 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 //					// log.info(s);
 //				}
 
-				int num = availableBEs.size();
+				int num = Coordinator.nodeMap.size();
+				List<String> availableBEs = new ArrayList<>(Coordinator.nodeMap.keySet());
 				if (num == 0) {
 					// for test only
 					// log.info("hashing on FE!");
@@ -149,15 +150,16 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 			String[] hashArray = hash.toArray(new String[0]);
 			Boolean[] res = new Boolean[n];
 			if (isFE) {
-				List<String> availableBEs = Coordinator.getAvailableNodes();
+//				List<String> availableBEs = Coordinator.getAvailableNodes();
 
 				// for test only
 				// log.info("=== available BEs ===");
-				for (String s: availableBEs) {
-					// log.info(s);
-				}
+//				for (String s: availableBEs) {
+//					// log.info(s);
+//				}
 
-				int num = availableBEs.size();
+				int num = Coordinator.nodeMap.size();
+				List<String> availableBEs = new ArrayList<>(Coordinator.nodeMap.keySet());
 				if (num == 0) {
 					// for test only
 					// log.info("checking on FE!");
