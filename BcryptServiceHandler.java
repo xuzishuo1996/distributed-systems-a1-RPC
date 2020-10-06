@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.*;
 
 import org.apache.log4j.BasicConfigurator;
@@ -12,9 +13,11 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 	private final static int BE_WORKER_THREADS_NUM = 2;
 	private final static int BE_MULTI_THREAD_THRESHOLD = 2;		// should be greater than BE_WORKER_THREADS_NUM
 	private final Logger log;
+	private final Random rand;
 
 	public BcryptServiceHandler(boolean isFE) {
 		this.isFE = isFE;
+		rand = new Random();
 		BasicConfigurator.configure();
 		log = Logger.getLogger(BcryptServiceHandler.class.getName());
 	}
@@ -42,22 +45,35 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 					hashPasswordHelper(input, logRounds, 0, n - 1, res);
 					return new ArrayList<>(Arrays.asList(res));
 				} else {
-					ExecutorService exec = Executors.newFixedThreadPool(2);
+					if (n == 1) {
+						int idx = rand.nextInt(num + 1);
+						if (idx == num) {
+							hashPasswordHelper(input, logRounds, 0, n - 1, res);
+							return new ArrayList<>(Arrays.asList(res));
+						} else {
+							ExecutorService exec = Executors.newFixedThreadPool(1);
 
-					Future<List<String>> subResult1;
-					Future<List<String>> subResult2 = null;
-					subResult1 = exec.submit(new HashAsyncTask(password, logRounds, availableBEs, 0));
-					if (num >= 2) {
-						subResult2 = exec.submit(new HashAsyncTask(password, logRounds, availableBEs, 1));;
+							Future<List<String>> result = exec.submit(new HashAsyncTask(password, logRounds, availableBEs.subList(idx, idx + 1), 0));
+							return result.get();
+						}
+					} else {
+						ExecutorService exec = Executors.newFixedThreadPool(2);
+
+						Future<List<String>> subResult1;
+						Future<List<String>> subResult2 = null;
+						subResult1 = exec.submit(new HashAsyncTask(password, logRounds, availableBEs, 0));
+						if (num >= 2) {
+							subResult2 = exec.submit(new HashAsyncTask(password, logRounds, availableBEs, 1));
+						}
+
+						List<String> result = new ArrayList<>(subResult1.get());
+						if (num >= 2) {
+							result.addAll(subResult2.get());
+						}
+
+						exec.shutdown();
+						return result;
 					}
-
-					List<String> result = new ArrayList<>(subResult1.get());
-					if (num >= 2) {
-						result.addAll(subResult2.get());
-					}
-
-					exec.shutdown();
-					return result;
 				}
 
 			} else {	// BE
