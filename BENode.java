@@ -50,19 +50,8 @@ public class BENode {
 		/* launch Thrift TThreadPoolServer: uses one thread to accept connections
 		 * and then handles each connection using a dedicated thread
 		 */
-		BcryptService.Processor<BcryptService.Iface> processor = new BcryptService.Processor<BcryptService.Iface>(new BcryptServiceHandler(false));
-		TServerSocket socket = new TServerSocket(portBE);
-		TThreadPoolServer.Args sargs = new TThreadPoolServer.Args(socket);
-		sargs.protocolFactory(new TBinaryProtocol.Factory());
-		sargs.transportFactory(new TFramedTransport.Factory());
-		sargs.processorFactory(new TProcessorFactory(processor));
-		sargs.maxWorkerThreads(32);	//TODO: how to determine the maxWorker size?
-		TThreadPoolServer server = new TThreadPoolServer(sargs);
-		server.serve();
-
-		// launch Thrift THsHaServer: can process multiple requests in parallel
 //		BcryptService.Processor<BcryptService.Iface> processor = new BcryptService.Processor<BcryptService.Iface>(new BcryptServiceHandler(false));
-//		TNonblockingServerSocket socket = new TNonblockingServerSocket(portBE);
+//		TServerSocket socket = new TServerSocket(portBE);
 //		TThreadPoolServer.Args sargs = new TThreadPoolServer.Args(socket);
 //		sargs.protocolFactory(new TBinaryProtocol.Factory());
 //		sargs.transportFactory(new TFramedTransport.Factory());
@@ -70,6 +59,17 @@ public class BENode {
 //		sargs.maxWorkerThreads(32);	//TODO: how to determine the maxWorker size?
 //		TThreadPoolServer server = new TThreadPoolServer(sargs);
 //		server.serve();
+
+		// launch Thrift THsHaServer: can process multiple requests in parallel
+		BcryptService.Processor<BcryptService.Iface> processor = new BcryptService.Processor<BcryptService.Iface>(new BcryptServiceHandler(false));
+		TNonblockingServerSocket socket = new TNonblockingServerSocket(portBE);
+		THsHaServer.Args sargs = new THsHaServer.Args(socket);
+		sargs.protocolFactory(new TBinaryProtocol.Factory());
+		sargs.transportFactory(new TFramedTransport.Factory());
+		sargs.processorFactory(new TProcessorFactory(processor));
+		sargs.maxWorkerThreads(32);	//TODO: how to determine the maxWorker size?
+		THsHaServer server = new THsHaServer(sargs);
+		server.serve();
 	}
 
 	static String getHostName()

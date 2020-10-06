@@ -57,7 +57,8 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 							return result.get();
 						}
 					} else {
-						ExecutorService exec = Executors.newFixedThreadPool(2);
+						// offload to BE
+						ExecutorService exec = Executors.newFixedThreadPool(4);
 
 						Future<List<String>> subResult1;
 						Future<List<String>> subResult2 = null;
@@ -66,10 +67,35 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 							subResult2 = exec.submit(new HashAsyncTask(password, logRounds, availableBEs, 1));
 						}
 
-						List<String> result = new ArrayList<>(subResult1.get());
+						// leave some work on FE
+						int splitSize = n / (num + 1);
+						int FEstart = splitSize * num;
+						int batchSize = (n - FEstart) / 2;
+						CountDownLatch latch = new CountDownLatch(BE_WORKER_THREADS_NUM);
+						log.info("FE latch initialized！");
+						for (int i = 0; i < BE_WORKER_THREADS_NUM; ++i) {
+							int start = FEstart + batchSize * i;
+							int end;
+							if (i == BE_WORKER_THREADS_NUM - 1) {
+								end = n - 1;
+								log.info("end is: " + end);
+							} else {
+								end = start + batchSize - 1;
+								log.info("end is: " + end);
+							}
+							exec.execute(new HashTask(input, logRounds, start, end, res, latch));
+						}
+						latch.await();
+						log.info("FE calculation done!");
+
+						List<String> result = subResult1.get();
 						if (num >= 2) {
 							result.addAll(subResult2.get());
 						}
+						log.info("GET BE result");
+
+						List<String> FEResult = new ArrayList<>(Arrays.asList(res));
+						result.addAll(FEResult);
 
 						exec.shutdown();
 						return result;
@@ -77,6 +103,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 				}
 
 			} else {	// BE
+				log.info("enter BE");
 				if (n < BE_MULTI_THREAD_THRESHOLD) {
 					// for test only
 					// log.info("single-threaded hashing on BE!");
@@ -99,6 +126,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 						new Thread(new HashTask(input, logRounds, start, end, res, latch)).start();
 					}
 					latch.await();
+					log.info("BE calculation done!");
 				}
 			}
 			return new ArrayList<>(Arrays.asList(res));
