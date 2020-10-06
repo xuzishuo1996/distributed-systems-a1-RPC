@@ -17,17 +17,17 @@ public class Coordinator {
     }
 
     // TODO: sychronized or not?
-    public static List<String> getAvailableNodes() {
-        List<String> availableNodes = new ArrayList<>();
-        synchronized (nodeMap) {
-            for (Map.Entry<String, NodeInfo> entry : nodeMap.entrySet()) {
-                NodeInfo node = entry.getValue();
-                if (!node.isBusy()) {
-                    availableNodes.add(entry.getKey());
-                    node.setBusy(true);
-                }
-            }
-        }
-        return availableNodes;
-    }
+//    public static List<String> getAvailableNodes() {
+//        List<String> availableNodes = new ArrayList<>();
+//        synchronized (nodeMap) {
+//            for (Map.Entry<String, NodeInfo> entry : nodeMap.entrySet()) {
+//                NodeInfo node = entry.getValue();
+//                if (!node.isBusy()) {
+//                    availableNodes.add(entry.getKey());
+//                    node.setBusy(true);
+//                }
+//            }
+//        }
+//        return availableNodes;
+//    }
 }

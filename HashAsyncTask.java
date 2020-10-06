@@ -27,17 +27,16 @@ public class HashAsyncTask implements Callable<List<String>> {
     @Override
     public List<String> call() {
         try {
-            String[] address = availableBEs.get(i).split(":");
             int n = password.size();
             int num = availableBEs.size();
-            int splitSize = n / num;
+            int splitSize = n / (num + 1);
             int start = splitSize * i;
-            int end;
-            if (i == num - 1) {
-                end = n;
-            } else {
-                end = start + splitSize;    // exclusive
-            }
+            int end = start + splitSize;
+//            if (i == num - 1) {
+//                end = n;
+//            } else {
+//                end = start + splitSize;    // exclusive
+//            }
             List<String> subList = password.subList(start, end);
 
             NodeInfo currInfo = Coordinator.nodeMap.get(availableBEs.get(i));

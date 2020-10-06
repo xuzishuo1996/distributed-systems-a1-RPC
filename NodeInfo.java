@@ -22,7 +22,7 @@ public class NodeInfo {
         asyncClient = new BcryptService.AsyncClient(protocolFactory, clientManager, transport);
     }
 
-    public BcryptService.AsyncClient getAsyncClient() {
+    public synchronized BcryptService.AsyncClient getAsyncClient() {
         return asyncClient;
     }
 

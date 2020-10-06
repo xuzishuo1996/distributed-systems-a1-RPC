@@ -26,17 +26,16 @@ public class CheckAsyncTask implements Callable<List<Boolean>> {
     @Override
     public List<Boolean> call() {
         try {
-            String[] address = availableBEs.get(i).split(":");
             int n = password.size();
             int num = availableBEs.size();
-            int splitSize = n / num;
+            int splitSize = n / (num + 1);
             int start = splitSize * i;
-            int end;
-            if (i == num - 1) {
-                end = n;
-            } else {
-                end = start + splitSize;    // exclusive
-            }
+            int end = start + splitSize;
+//            if (i == num - 1) {
+//                end = n;
+//            } else {
+//                end = start + splitSize;    // exclusive
+//            }
             List<String> subPassword = password.subList(start, end);
             List<String> subHash = hash.subList(start, end);
 

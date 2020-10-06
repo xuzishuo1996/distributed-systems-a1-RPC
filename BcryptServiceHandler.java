@@ -9,8 +9,8 @@ import org.mindrot.jbcrypt.BCrypt;
 
 public class BcryptServiceHandler implements BcryptService.Iface {
 	private final boolean isFE;
-	private final static int BE_WORKER_THREADS_NUM = 2;
-	private final static int BE_MULTI_THREAD_THRESHOLD = 2;		// should be greater than BE_WORKER_THREADS_NUM
+	private final static int MAX_WORKER_THREADS_NUM = 2;
+	private final static int MULTI_THREAD_INPUT_THRESHOLD = 2;		// should be greater than BE_WORKER_THREADS_NUM
 	private final Logger log;
 
 //	private final static Semaphore[] semaphores = new Semaphore[]{new Semaphore(1), new Semaphore(1)};	// hardcode it to 2 because at most 2 BE nodes for grading
@@ -34,51 +34,51 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 				throw new IllegalArgument("the logRounds argument of hashPassword is out of range");
 			}
 
-//			List<String> ret = new ArrayList<>();
-//			for (String onePwd: password) {
-//				String oneHash = BCrypt.hashpw(onePwd, BCrypt.gensalt(logRounds));
-//				ret.add(oneHash);
-//			}
-//			return ret;
-
 			String[] input = password.toArray(new String[0]);
 			String[] res = new String[n];
 			if (isFE) {
-//				List<String> availableBEs = Coordinator.getAvailableNodes();
-
-				// for test only
-				// log.info("=== available BEs ===");
-//				for (String s: availableBEs) {
-//					// log.info(s);
-//				}
-
 				int num = Coordinator.nodeMap.size();
 				List<String> availableBEs = new ArrayList<>(Coordinator.nodeMap.keySet());
-				if (num == 0 || n < (num + 1)) {
+				if (num == 0) {
 					// for test only
 					// log.info("hashing on FE!");
 
-					hashPasswordHelper(input, logRounds, 0, n - 1, res);
-					return new ArrayList<>(Arrays.asList(res));
-				} else {
-					// leave 1/3 in FE
-					hashPasswordHelper(input, logRounds, 0, n / (1 + num) - 1, res);
-					List<String> result = new ArrayList<>(Arrays.asList(res));
+					if (n < MULTI_THREAD_INPUT_THRESHOLD) {
+						hashPasswordHelper(input, logRounds, 0, n - 1, res);
+					} else {
+						// for test only
+						// log.info("multi-threaded hashing on BE!");
 
+						int batchSize = n / MAX_WORKER_THREADS_NUM;
+						CountDownLatch latch = new CountDownLatch(MAX_WORKER_THREADS_NUM);
+						for (int i = 0; i < MAX_WORKER_THREADS_NUM; ++i) {
+							int start = batchSize * i;
+							int end;
+							if (i == MAX_WORKER_THREADS_NUM - 1) {
+								end = n - 1;
+							} else {
+								end = start + batchSize - 1;
+							}
+							new Thread(new HashTask(input, logRounds, start, end, res, latch)).start();
+						}
+						latch.await();
+					}
+					return new ArrayList<>(Arrays.asList(res));
+
+				} else {
 					// offload to BE
 					ExecutorService exec = Executors.newFixedThreadPool(2);
 
 					Future<List<String>> subResult1;
 					Future<List<String>> subResult2 = null;
-					subResult1 = exec.submit(new HashAsyncTask(password, logRounds, availableBEs, 1));
+					subResult1 = exec.submit(new HashAsyncTask(password, logRounds, availableBEs, 0));
 					if (num >= 2) {
-						subResult2 = exec.submit(new HashAsyncTask(password, logRounds, availableBEs, 2));;
+						subResult2 = exec.submit(new HashAsyncTask(password, logRounds, availableBEs, 1));
 					}
 
-//					while (!subResult1.isDone());
-//					if (num == 2) {
-//						while (!subResult2.isDone());
-//					}
+					// leave 1/3 in FE
+					hashPasswordHelper(input, logRounds, n / (num + 1) * num, n - 1, res);
+					List<String> result = new ArrayList<>(Arrays.asList(res));
 
 					result.addAll(subResult1.get());
 					if (num >= 2) {
@@ -91,10 +91,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 				}
 
 			} else {	// BE
-				// set BE to busy and add load
-//				String host = InetAddress.getLocalHost().getHostName();
-
-				if (n < BE_MULTI_THREAD_THRESHOLD) {
+				if (n < MULTI_THREAD_INPUT_THRESHOLD) {
 					// for test only
 					// log.info("single-threaded hashing on BE!");
 
@@ -103,12 +100,12 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 					// for test only
 					// log.info("multi-threaded hashing on BE!");
 
-					int batchSize = n / BE_WORKER_THREADS_NUM;
-					CountDownLatch latch = new CountDownLatch(BE_WORKER_THREADS_NUM);
-					for (int i = 0; i < BE_WORKER_THREADS_NUM; ++i) {
+					int batchSize = n / MAX_WORKER_THREADS_NUM;
+					CountDownLatch latch = new CountDownLatch(MAX_WORKER_THREADS_NUM);
+					for (int i = 0; i < MAX_WORKER_THREADS_NUM; ++i) {
 						int start = batchSize * i;
 						int end;
-						if (i == BE_WORKER_THREADS_NUM - 1) {
+						if (i == MAX_WORKER_THREADS_NUM - 1) {
 							end = n - 1;
 						} else {
 							end = start + batchSize - 1;
@@ -118,12 +115,9 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 					}
 					latch.await();
 				}
+				return new ArrayList<>(Arrays.asList(res));
 
-				// sub BE's load
 			}
-			// log.info("res from BE: " + new ArrayList<>(Arrays.asList(res)));
-			return new ArrayList<>(Arrays.asList(res));
-
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new ArrayList<>();
@@ -138,53 +132,53 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 		int n = password.size();
 		try {
 			if (password.size() != hash.size()) {
-				// log.info("password.size(): " + password.size());
-				// log.info("hash.size(): " + hash.size());
 				throw new IllegalArgument("the length of passwords and hashes does not match");
 			}
-
-//			List<Boolean> ret = new ArrayList<>();
-//			for (int i = 0; i < password.size(); ++i) {
-//				String onePwd = password.get(i);
-//				String oneHash = hash.get(i);
-//				ret.add(BCrypt.checkpw(onePwd, oneHash));
-//			}
-//			return ret;
 
 			String[] passwordArray = password.toArray(new String[0]);
 			String[] hashArray = hash.toArray(new String[0]);
 			Boolean[] res = new Boolean[n];
 			if (isFE) {
-//				List<String> availableBEs = Coordinator.getAvailableNodes();
-
-				// for test only
-				// log.info("=== available BEs ===");
-//				for (String s: availableBEs) {
-//					// log.info(s);
-//				}
-
 				int num = Coordinator.nodeMap.size();
 				List<String> availableBEs = new ArrayList<>(Coordinator.nodeMap.keySet());
-				if (num == 0 || n < (num + 1)) {
+				if (num == 0) {
 					// for test only
 					// log.info("checking on FE!");
 
-					checkPasswordHelper(passwordArray, hashArray, 0, n - 1, res);
+					if (n < MULTI_THREAD_INPUT_THRESHOLD) {
+						checkPasswordHelper(passwordArray, hashArray, 0, n - 1, res);
+					} else {
+						int batchSize = n / MAX_WORKER_THREADS_NUM;
+						CountDownLatch latch = new CountDownLatch(MAX_WORKER_THREADS_NUM);
+						for (int i = 0; i < MAX_WORKER_THREADS_NUM; ++i) {
+							int start = batchSize * i;
+							int end;
+							if (i == MAX_WORKER_THREADS_NUM - 1) {
+								end = n - 1;
+							} else {
+								end = start + batchSize - 1;
+							}
+							new Thread(new CheckTask(passwordArray, hashArray, start, end, res, latch)).start();
+						}
+						latch.await();
+					}
 					return new ArrayList<>(Arrays.asList(res));
-				} else {
-					// leave 1/3 in FE
-					checkPasswordHelper(passwordArray, hashArray, 0, n / (1 + num) - 1, res);
-					List<Boolean> result = new ArrayList<>(Arrays.asList(res));
 
+				} else {
 					// offload to BE
 					ExecutorService exec = Executors.newFixedThreadPool(2);
 
 					Future<List<Boolean>> subResult1;
 					Future<List<Boolean>> subResult2 = null;
-					subResult1 = exec.submit(new CheckAsyncTask(password, hash, availableBEs, 1));
+					subResult1 = exec.submit(new CheckAsyncTask(password, hash, availableBEs, 0));
 					if (num >= 2) {
-						subResult2 = exec.submit(new CheckAsyncTask(password, hash, availableBEs, 2));
+						subResult2 = exec.submit(new CheckAsyncTask(password, hash, availableBEs, 1));
 					}
+
+					// leave 1/3 in FE
+					checkPasswordHelper(passwordArray, hashArray, n / (num + 1) * num, n - 1, res);
+					List<Boolean> result = new ArrayList<>(Arrays.asList(res));
+
 					result.addAll(subResult1.get());
 					if (num >= 2) {
 						result.addAll(subResult2.get());
@@ -195,10 +189,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 				}
 
 			} else {
-				// set BE to busy and add load
-//				String host = InetAddress.getLocalHost().getHostName();
-
-				if (n < BE_MULTI_THREAD_THRESHOLD) {
+				if (n < MULTI_THREAD_INPUT_THRESHOLD) {
 					// for test only
 					// log.info("single-threaded checking on BE!");
 
@@ -207,12 +198,12 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 					// for test only
 					// log.info("multi-threaded checking on BE!");
 
-					int batchSize = n / BE_WORKER_THREADS_NUM;
-					CountDownLatch latch = new CountDownLatch(BE_WORKER_THREADS_NUM);
-					for (int i = 0; i < BE_WORKER_THREADS_NUM; ++i) {
+					int batchSize = n / MAX_WORKER_THREADS_NUM;
+					CountDownLatch latch = new CountDownLatch(MAX_WORKER_THREADS_NUM);
+					for (int i = 0; i < MAX_WORKER_THREADS_NUM; ++i) {
 						int start = batchSize * i;
 						int end;
-						if (i == BE_WORKER_THREADS_NUM - 1) {
+						if (i == MAX_WORKER_THREADS_NUM - 1) {
 							end = n - 1;
 						} else {
 							end = start + batchSize - 1;
@@ -222,10 +213,8 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 					}
 					latch.await();
 				}
-
-				// sub BE's load
+				return new ArrayList<>(Arrays.asList(res));
 			}
-			return new ArrayList<>(Arrays.asList(res));
 
 		} catch (Exception e) {
 			e.printStackTrace();
