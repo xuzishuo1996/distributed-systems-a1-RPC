@@ -54,20 +54,25 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 
 				int num = Coordinator.nodeMap.size();
 				List<String> availableBEs = new ArrayList<>(Coordinator.nodeMap.keySet());
-				if (num == 0) {
+				if (num == 0 || n < (num + 1)) {
 					// for test only
 					// log.info("hashing on FE!");
 
 					hashPasswordHelper(input, logRounds, 0, n - 1, res);
 					return new ArrayList<>(Arrays.asList(res));
 				} else {
+					// leave 1/3 in FE
+					hashPasswordHelper(input, logRounds, 0, n / (1 + num) - 1, res);
+					List<String> result = new ArrayList<>(Arrays.asList(res));
+
+					// offload to BE
 					ExecutorService exec = Executors.newFixedThreadPool(2);
 
 					Future<List<String>> subResult1;
 					Future<List<String>> subResult2 = null;
-					subResult1 = exec.submit(new HashAsyncTask(password, logRounds, availableBEs, 0));
+					subResult1 = exec.submit(new HashAsyncTask(password, logRounds, availableBEs, 1));
 					if (num >= 2) {
-						subResult2 = exec.submit(new HashAsyncTask(password, logRounds, availableBEs, 1));;
+						subResult2 = exec.submit(new HashAsyncTask(password, logRounds, availableBEs, 2));;
 					}
 
 //					while (!subResult1.isDone());
@@ -75,7 +80,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 //						while (!subResult2.isDone());
 //					}
 
-					List<String> result = new ArrayList<>(subResult1.get());
+					result.addAll(subResult1.get());
 					if (num >= 2) {
 						result.addAll(subResult2.get());
 					}
@@ -160,22 +165,27 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 
 				int num = Coordinator.nodeMap.size();
 				List<String> availableBEs = new ArrayList<>(Coordinator.nodeMap.keySet());
-				if (num == 0) {
+				if (num == 0 || n < (num + 1)) {
 					// for test only
 					// log.info("checking on FE!");
 
 					checkPasswordHelper(passwordArray, hashArray, 0, n - 1, res);
 					return new ArrayList<>(Arrays.asList(res));
 				} else {
+					// leave 1/3 in FE
+					checkPasswordHelper(passwordArray, hashArray, 0, n / (1 + num) - 1, res);
+					List<Boolean> result = new ArrayList<>(Arrays.asList(res));
+
+					// offload to BE
 					ExecutorService exec = Executors.newFixedThreadPool(2);
 
 					Future<List<Boolean>> subResult1;
 					Future<List<Boolean>> subResult2 = null;
-					subResult1 = exec.submit(new CheckAsyncTask(password, hash, availableBEs, 0));
+					subResult1 = exec.submit(new CheckAsyncTask(password, hash, availableBEs, 1));
 					if (num >= 2) {
-						subResult2 = exec.submit(new CheckAsyncTask(password, hash, availableBEs, 1));
+						subResult2 = exec.submit(new CheckAsyncTask(password, hash, availableBEs, 2));
 					}
-					List<Boolean> result = new ArrayList<>(subResult1.get());
+					result.addAll(subResult1.get());
 					if (num >= 2) {
 						result.addAll(subResult2.get());
 					}
