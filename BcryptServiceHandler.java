@@ -137,6 +137,18 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 					checkPasswordHelper(passwordArray, hashArray, 0, n - 1, res);
 					return new ArrayList<>(Arrays.asList(res));
 				} else {
+					if (n == 1) {
+						int idx = rand.nextInt(num + 1);
+						if (idx == num) {
+							checkPasswordHelper(passwordArray, hashArray, 0, n - 1, res);
+							return new ArrayList<>(Arrays.asList(res));
+						} else {
+							ExecutorService exec = Executors.newFixedThreadPool(1);
+
+							Future<List<Boolean>> result = exec.submit(new CheckAsyncTask(password, hash, availableBEs.subList(idx, idx + 1), 0));
+							return result.get();
+						}
+					}
 					ExecutorService exec = Executors.newFixedThreadPool(2);
 
 					Future<List<Boolean>> subResult1;
