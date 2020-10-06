@@ -34,6 +34,8 @@ public class Client1 {
             BcryptService.Client client = new BcryptService.Client(protocol);
             transport.open();
 
+            long sumTime = 0;
+
             for (int i = 0; i < NUM_OF_REQUESTS_PER_THREAD; ++i) {
                 List<String> passwords = ClientUtility.genPasswords(LEN_OF_CHARS_PER_PASSWORD, NUM_OF_PASSWORDS_PER_REQUEST);
 
@@ -42,8 +44,8 @@ public class Client1 {
                 List<String> hashes = client.hashPassword(passwords, LOG_ROUNDS);
 
                 long endTime = System.currentTimeMillis();
-                log.info("Request " + i  + " Throughput for logRounds=" + LOG_ROUNDS + ": " + NUM_OF_PASSWORDS_PER_REQUEST * 1000f/(endTime-startTime));
-                log.info("Request " + i  + " Latency for logRounds=" + LOG_ROUNDS + ": " + (endTime-startTime)/NUM_OF_PASSWORDS_PER_REQUEST);
+                sumTime += endTime - startTime;
+//                log.info("Request " + i  + " Latency for logRounds=" + LOG_ROUNDS + ": " + (endTime-startTime)/NUM_OF_PASSWORDS_PER_REQUEST);
 
                 // Check correctness
                 List<Boolean> result = client.checkPassword(passwords, hashes);
@@ -54,8 +56,12 @@ public class Client1 {
                         break;
                     }
                 }
-                log.info("Request " + i + " Check: " + succeed);
+                if (!succeed) {
+                    log.info("Request " + i + " Check: " + succeed);
+                }
             }
+
+            log.info("Throughput for logRounds=" + LOG_ROUNDS + ": " + NUM_OF_PASSWORDS_PER_REQUEST * NUM_OF_REQUESTS_PER_THREAD * 1000f/(sumTime));
 
             transport.close();
         } catch (TException e) {

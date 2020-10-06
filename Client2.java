@@ -42,11 +42,16 @@ public class Client2 {
 //            BcryptService.Client client = new BcryptService.Client(protocol);
 //            transport.open();
 
+            long startTime = System.currentTimeMillis();
             for (int i = 0; i < NUM_OF_THREADS; ++i) {
                 exec.execute(new Task(args[0], Integer.parseInt(args[1])));
             }
 
             latch.await();
+
+            long endTime = System.currentTimeMillis();
+            log.info("Throughput for logRounds=" + LOG_ROUNDS + ": " + NUM_OF_PASSWORDS_PER_REQUEST * NUM_OF_REQUESTS_PER_THREAD * NUM_OF_THREADS * 1000f/(endTime-startTime));
+
             exec.shutdown();
 //            transport.close();
         } catch (InterruptedException e) {
@@ -83,8 +88,7 @@ public class Client2 {
                     List<String> hashes = client.hashPassword(passwords, LOG_ROUNDS);
 
                     long endTime = System.currentTimeMillis();
-                    log.info("Request " + i  + " Throughput for logRounds=" + LOG_ROUNDS + ": " + NUM_OF_PASSWORDS_PER_REQUEST * 1000f/(endTime-startTime));
-                    log.info("Request " + i  + " Latency for logRounds=" + LOG_ROUNDS + ": " + (endTime-startTime)/NUM_OF_PASSWORDS_PER_REQUEST);
+//                    log.info("Request " + i  + " Latency for logRounds=" + LOG_ROUNDS + ": " + (endTime-startTime)/NUM_OF_PASSWORDS_PER_REQUEST);
 
                     // Check correctness
                     List<Boolean> result = client.checkPassword(passwords, hashes);
@@ -97,7 +101,9 @@ public class Client2 {
                             break;
                         }
                     }
-                    log.info("Request " + i + " Check: " + succeed);
+                    if (!succeed) {
+                        log.info("Request " + i + " Check: " + succeed);
+                    }
                 }
                 latch.countDown();
             } catch (TException e) {
