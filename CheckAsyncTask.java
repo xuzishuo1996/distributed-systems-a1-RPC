@@ -26,7 +26,6 @@ public class CheckAsyncTask implements Callable<List<Boolean>> {
     @Override
     public List<Boolean> call() {
         try {
-            String[] address = availableBEs.get(i).split(":");
             int n = password.size();
             int num = availableBEs.size();
             int splitSize = n / num;
@@ -45,7 +44,7 @@ public class CheckAsyncTask implements Callable<List<Boolean>> {
 
             synchronized (client) {
                 currInfo.setBusy(true);
-                currInfo.addLoad(splitSize, (short) 1);
+//                currInfo.addLoad(splitSize, (short) 1);
 
 //                // for test only
 //                System.out.println("hashing offload to BE " + i + ": " + address[0] + " " + address[1]);
@@ -53,7 +52,7 @@ public class CheckAsyncTask implements Callable<List<Boolean>> {
                 client.checkPassword(subPassword, subHash, new CheckCallback());
 
                 currInfo.setBusy(false);
-                currInfo.subLoad(splitSize, (short) 1);
+//                currInfo.subLoad(splitSize, (short) 1);
 
                 latch.await();
             }

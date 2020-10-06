@@ -12,14 +12,14 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 	private final boolean isFE;
 	private final static int BE_WORKER_THREADS_NUM = 2;
 	private final static int BE_MULTI_THREAD_THRESHOLD = 2;		// should be greater than BE_WORKER_THREADS_NUM
-	private final Logger log;
+//	private final Logger log;
 	private final Random rand;
 
 	public BcryptServiceHandler(boolean isFE) {
 		this.isFE = isFE;
 		rand = new Random();
-		BasicConfigurator.configure();
-		log = Logger.getLogger(BcryptServiceHandler.class.getName());
+//		BasicConfigurator.configure();
+//		log = Logger.getLogger(BcryptServiceHandler.class.getName());
 	}
 
 	public List<String> hashPassword(List<String> password, short logRounds) throws IllegalArgument, org.apache.thrift.TException

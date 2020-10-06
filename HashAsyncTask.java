@@ -27,7 +27,6 @@ public class HashAsyncTask implements Callable<List<String>> {
     @Override
     public List<String> call() {
         try {
-            String[] address = availableBEs.get(i).split(":");
             int n = password.size();
             int num = availableBEs.size();
             int splitSize = n / num;
@@ -45,7 +44,7 @@ public class HashAsyncTask implements Callable<List<String>> {
 
             synchronized (client) {
                 currInfo.setBusy(true);
-                currInfo.addLoad(splitSize, logRounds);
+//                currInfo.addLoad(splitSize, logRounds);
 
 //                // for test only
 //                System.out.println("hashing offload to BE " + i + ": " + address[0] + " " + address[1]);
@@ -53,7 +52,7 @@ public class HashAsyncTask implements Callable<List<String>> {
                 client.hashPassword(subList, logRounds, new HashCallback());
 
                 currInfo.setBusy(false);
-                currInfo.subLoad(splitSize, logRounds);
+//                currInfo.subLoad(splitSize, logRounds);
 
                 latch.await();
             }
