@@ -120,7 +120,6 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new IllegalArgument(e.getMessage());
 		}
 	}
 
@@ -217,7 +216,6 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new IllegalArgument(e.getMessage());
 		}
 	}
 
@@ -302,7 +300,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 //				}
 			}
 		} catch (Exception e) {
-			throw new IllegalArgument(e.getMessage());
+			e.printStackTrace();
 		}
 	}
 }
