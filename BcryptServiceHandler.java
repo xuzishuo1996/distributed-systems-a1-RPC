@@ -104,6 +104,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 			return new ArrayList<>(Arrays.asList(res));
 
 		} catch (IllegalArgument e) {
+			e.printStackTrace();
 			throw new IllegalArgument(e);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -181,6 +182,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 			return new ArrayList<>(Arrays.asList(res));
 
 		} catch (IllegalArgument e) {
+			e.printStackTrace();
 			throw new IllegalArgument(e);
 		} catch (Exception e) {
 			e.printStackTrace();
