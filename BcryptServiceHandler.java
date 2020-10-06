@@ -88,6 +88,8 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 
 					int batchSize = n / BE_WORKER_THREADS_NUM;
 					CountDownLatch latch = new CountDownLatch(BE_WORKER_THREADS_NUM);
+
+					ExecutorService exec = Executors.newFixedThreadPool(BE_WORKER_THREADS_NUM);
 					for (int i = 0; i < BE_WORKER_THREADS_NUM; ++i) {
 						int start = batchSize * i;
 						int end;
@@ -96,9 +98,11 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 						} else {
 							end = start + batchSize - 1;
 						}
-						new Thread(new HashTask(input, logRounds, start, end, res, latch)).start();
+//						new Thread(new HashTask(input, logRounds, start, end, res, latch)).start();
+						exec.execute(new HashTask(input, logRounds, start, end, res, latch));
 					}
 					latch.await();
+					exec.shutdown();
 				}
 			}
 			return new ArrayList<>(Arrays.asList(res));
@@ -177,6 +181,8 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 
 					int batchSize = n / BE_WORKER_THREADS_NUM;
 					CountDownLatch latch = new CountDownLatch(BE_WORKER_THREADS_NUM);
+
+					ExecutorService exec = Executors.newFixedThreadPool(BE_WORKER_THREADS_NUM);
 					for (int i = 0; i < BE_WORKER_THREADS_NUM; ++i) {
 						int start = batchSize * i;
 						int end;
@@ -185,9 +191,11 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 						} else {
 							end = start + batchSize - 1;
 						}
-						new Thread(new CheckTask(passwordArray, hashArray, start, end, res, latch)).start();
+//						new Thread(new CheckTask(passwordArray, hashArray, start, end, res, latch)).start();
+						exec.execute(new CheckTask(passwordArray, hashArray, start, end, res, latch));
 					}
 					latch.await();
+					exec.shutdown();
 				}
 			}
 			return new ArrayList<>(Arrays.asList(res));
