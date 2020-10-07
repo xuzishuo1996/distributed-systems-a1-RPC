@@ -45,17 +45,15 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 //				availableBEs = choice ? notBusyBEs: existBEs;
 //				num = availableBEs.size();
 
-				if (n == 1) {
-					availableBEs = notBusyBEs;
-					num = availableBEs.size();
-				} else if (n <= 9) {
-					boolean choice = rand.nextBoolean();
-					availableBEs = choice ? notBusyBEs : existBEs;
-					num = availableBEs.size();
-				} else {
-					availableBEs = existBEs;
-					num = availableBEs.size();
+				int randNum = rand.nextInt(16);
+				if (n == 1) {	// n == 1: client 2
+					availableBEs = randNum < 14 ? notBusyBEs : existBEs;
+				} else if (n <= 9) {	// n == 4: client 3
+					availableBEs = randNum < 16 ? notBusyBEs : existBEs;
+				} else {	// n == 16: client 1
+					availableBEs = randNum < 16 ? notBusyBEs : existBEs;
 				}
+				num = availableBEs.size();
 
 				if (num == 0) {
 					// for test only
