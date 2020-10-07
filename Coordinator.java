@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,16 +19,17 @@ public class Coordinator {
 
     // TODO: sychronized or not?
     public static List<String> getAvailableNodes() {
-        List<String> availableNodes = new ArrayList<>();
-        synchronized (nodeMap) {
-            for (Map.Entry<String, NodeInfo> entry : nodeMap.entrySet()) {
-                NodeInfo node = entry.getValue();
-                if (!node.isBusy()) {
-                    availableNodes.add(entry.getKey());
-                    node.setBusy(true);
-                }
-            }
-        }
-        return availableNodes;
+//        List<String> availableNodes = new ArrayList<>();
+////        synchronized (nodeMap) {
+//            for (Map.Entry<String, NodeInfo> entry : nodeMap.entrySet()) {
+//                NodeInfo node = entry.getValue();
+////                if (!node.isBusy()) {
+//                    availableNodes.add(entry.getKey());
+////                    node.setBusy(true);
+////                }
+//            }
+////        }
+//        return availableNodes;
+        return new ArrayList<>(nodeMap.keySet());
     }
 }
