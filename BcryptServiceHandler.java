@@ -49,16 +49,21 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 						int idx = rand.nextInt(num + 1);
 						if (idx == num) {
 							hashPasswordHelper(input, logRounds, 0, n - 1, res);
+							log.info("FE res.length: " + res.length);
 							return new ArrayList<>(Arrays.asList(res));
 						} else {
+							log.info("n==1 FE offload to BE");
 							ExecutorService exec = Executors.newFixedThreadPool(1);
 
 							Future<List<String>> result = exec.submit(new HashAsyncTask(password, logRounds, availableBEs.subList(idx, idx + 1), 0));
-							return result.get();
+							List<String> tmpRes = result.get();
+
+							log.info("BE tmpRes: " + tmpRes.size());
+							return tmpRes;
 						}
 					} else {
 						// offload to BE
-						ExecutorService exec = Executors.newFixedThreadPool(4);
+						ExecutorService exec = Executors.newFixedThreadPool(2);
 
 						Future<List<String>> subResult1;
 						Future<List<String>> subResult2 = null;

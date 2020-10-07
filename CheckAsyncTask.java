@@ -27,6 +27,12 @@ public class CheckAsyncTask implements Callable<List<Boolean>> {
     public List<Boolean> call() {
         try {
             int n = password.size();
+            List<String> subPassword;
+            List<String> subHash;
+            if (n == 1) {
+                subPassword = password;
+                subHash = hash;
+            }
             int num = availableBEs.size();
             int splitSize = n / (num + 1);
             int start = splitSize * i;
@@ -36,8 +42,8 @@ public class CheckAsyncTask implements Callable<List<Boolean>> {
 //            } else {
                 end = start + splitSize;    // exclusive
 //            }
-            List<String> subPassword = password.subList(start, end);
-            List<String> subHash = hash.subList(start, end);
+            subPassword = password.subList(start, end);
+            subHash = hash.subList(start, end);
 
             NodeInfo currInfo = Coordinator.nodeMap.get(availableBEs.get(i));
             BcryptService.AsyncClient client = currInfo.getAsyncClient();

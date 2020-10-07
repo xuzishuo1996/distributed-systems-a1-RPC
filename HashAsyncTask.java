@@ -28,16 +28,21 @@ public class HashAsyncTask implements Callable<List<String>> {
     public List<String> call() {
         try {
             int n = password.size();
-            int num = availableBEs.size();
-            int splitSize = n / (num + 1);
-            int start = splitSize * i;
-            int end;
+            List<String> subList;
+            if (n == 1) {
+                subList = password;
+            } else {
+                int num = availableBEs.size();
+                int splitSize = n / (num + 1);
+                int start = splitSize * i;
+                int end;
 //            if (i == num - 1) {
 //                end = n;
 //            } else {
                 end = start + splitSize;    // exclusive
 //            }
-            List<String> subList = password.subList(start, end);
+                subList = password.subList(start, end);
+            }
 
             NodeInfo currInfo = Coordinator.nodeMap.get(availableBEs.get(i));
             BcryptService.AsyncClient client = currInfo.getAsyncClient();
