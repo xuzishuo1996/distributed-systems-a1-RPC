@@ -51,25 +51,25 @@ public class BENode {
 		/* launch Thrift TThreadPoolServer: uses one thread to accept connections
 		 * and then handles each connection using a dedicated thread
 		 */
-//		BcryptService.Processor<BcryptService.Iface> processor = new BcryptService.Processor<BcryptService.Iface>(new BcryptServiceHandler(false));
-//		TServerSocket socket = new TServerSocket(portBE);
-//		TThreadPoolServer.Args sargs = new TThreadPoolServer.Args(socket);
-//		sargs.protocolFactory(new TBinaryProtocol.Factory());
-//		sargs.transportFactory(new TFramedTransport.Factory());
-//		sargs.processorFactory(new TProcessorFactory(processor));
-//		sargs.maxWorkerThreads(64);	//TODO: how to determine the maxWorker size?
-//		TThreadPoolServer server = new TThreadPoolServer(sargs);
-//		server.serve();
-
 		BcryptService.Processor<BcryptService.Iface> processor = new BcryptService.Processor<BcryptService.Iface>(new BcryptServiceHandler(false));
-		TNonblockingServerSocket socket = new TNonblockingServerSocket(portBE);
-		TThreadedSelectorServer.Args sargs = new TThreadedSelectorServer.Args(socket);
+		TServerSocket socket = new TServerSocket(portBE);
+		TThreadPoolServer.Args sargs = new TThreadPoolServer.Args(socket);
 		sargs.protocolFactory(new TBinaryProtocol.Factory());
 		sargs.transportFactory(new TFramedTransport.Factory());
 		sargs.processorFactory(new TProcessorFactory(processor));
-//		sargs.maxWorkerThreads(64);	//TODO: how to determine the maxWorker size?
-		TThreadedSelectorServer server = new TThreadedSelectorServer(sargs);
+		sargs.maxWorkerThreads(64);	//TODO: how to determine the maxWorker size?
+		TThreadPoolServer server = new TThreadPoolServer(sargs);
 		server.serve();
+
+//		BcryptService.Processor<BcryptService.Iface> processor = new BcryptService.Processor<BcryptService.Iface>(new BcryptServiceHandler(false));
+//		TNonblockingServerSocket socket = new TNonblockingServerSocket(portBE);
+//		TThreadedSelectorServer.Args sargs = new TThreadedSelectorServer.Args(socket);
+//		sargs.protocolFactory(new TBinaryProtocol.Factory());
+//		sargs.transportFactory(new TFramedTransport.Factory());
+//		sargs.processorFactory(new TProcessorFactory(processor));
+////		sargs.maxWorkerThreads(64);	//TODO: how to determine the maxWorker size?
+//		TThreadedSelectorServer server = new TThreadedSelectorServer(sargs);
+//		server.serve();
 
 		// launch Thrift THsHaServer: can process multiple requests in parallel
 //		BcryptService.Processor<BcryptService.Iface> processor = new BcryptService.Processor<BcryptService.Iface>(new BcryptServiceHandler(false));
