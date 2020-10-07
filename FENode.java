@@ -28,25 +28,25 @@ public class FENode {
 //		log.info("Launching FE node on port " + portFE);
 
 		// launch Thrift THsHaServer: can process multiple requests in parallel
-		BcryptService.Processor<BcryptService.Iface> processor = new BcryptService.Processor<BcryptService.Iface>(new BcryptServiceHandler(true));
-		TNonblockingServerSocket socket = new TNonblockingServerSocket(portFE);
-		THsHaServer.Args sargs = new THsHaServer.Args(socket);
-		sargs.protocolFactory(new TBinaryProtocol.Factory());
-		sargs.transportFactory(new TFramedTransport.Factory());
-		sargs.processorFactory(new TProcessorFactory(processor));
-		sargs.maxWorkerThreads(32);	//TODO: how to determine the maxWorker size?
-		THsHaServer server = new THsHaServer(sargs);
-		server.serve();
-
-		// TThreadPoolServer
 //		BcryptService.Processor<BcryptService.Iface> processor = new BcryptService.Processor<BcryptService.Iface>(new BcryptServiceHandler(true));
-//		TServerSocket socket = new TServerSocket(portFE);
-//		TThreadPoolServer.Args sargs = new TThreadPoolServer.Args(socket);
+//		TNonblockingServerSocket socket = new TNonblockingServerSocket(portFE);
+//		THsHaServer.Args sargs = new THsHaServer.Args(socket);
 //		sargs.protocolFactory(new TBinaryProtocol.Factory());
 //		sargs.transportFactory(new TFramedTransport.Factory());
 //		sargs.processorFactory(new TProcessorFactory(processor));
-//		sargs.maxWorkerThreads(32);
-//		TThreadPoolServer server = new TThreadPoolServer(sargs);
+//		sargs.maxWorkerThreads(64);	//TODO: how to determine the maxWorker size?
+//		THsHaServer server = new THsHaServer(sargs);
 //		server.serve();
+
+		// TThreadPoolServer
+		BcryptService.Processor<BcryptService.Iface> processor = new BcryptService.Processor<BcryptService.Iface>(new BcryptServiceHandler(true));
+		TServerSocket socket = new TServerSocket(portFE);
+		TThreadPoolServer.Args sargs = new TThreadPoolServer.Args(socket);
+		sargs.protocolFactory(new TBinaryProtocol.Factory());
+		sargs.transportFactory(new TFramedTransport.Factory());
+		sargs.processorFactory(new TProcessorFactory(processor));
+		sargs.maxWorkerThreads(64);
+		TThreadPoolServer server = new TThreadPoolServer(sargs);
+		server.serve();
     }
 }

@@ -32,11 +32,11 @@ public class HashAsyncTask implements Callable<List<String>> {
             int splitSize = n / (num + 1);
             int start = splitSize * i;
             int end;
-            if (i == num - 1) {
-                end = n;
-            } else {
+//            if (i == num - 1) {
+//                end = n;
+//            } else {
                 end = start + splitSize;    // exclusive
-            }
+//            }
             List<String> subList = password.subList(start, end);
 
             NodeInfo currInfo = Coordinator.nodeMap.get(availableBEs.get(i));

@@ -31,11 +31,11 @@ public class CheckAsyncTask implements Callable<List<Boolean>> {
             int splitSize = n / (num + 1);
             int start = splitSize * i;
             int end;
-            if (i == num - 1) {
-                end = n;
-            } else {
+//            if (i == num - 1) {
+//                end = n;
+//            } else {
                 end = start + splitSize;    // exclusive
-            }
+//            }
             List<String> subPassword = password.subList(start, end);
             List<String> subHash = hash.subList(start, end);
 

@@ -70,7 +70,9 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 						// leave some work on FE
 						int splitSize = n / (num + 1);
 						int FEstart = splitSize * num;
+						log.info("FEstart" + FEstart);
 						int batchSize = (n - FEstart) / 2;
+						log.info("batchSize" + batchSize);
 						CountDownLatch latch = new CountDownLatch(BE_WORKER_THREADS_NUM);
 						log.info("FE latch initialized！");
 						for (int i = 0; i < BE_WORKER_THREADS_NUM; ++i) {
@@ -89,13 +91,18 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 						log.info("FE calculation done!");
 
 						List<String> result = subResult1.get();
+						log.info("BE1 subResult1 size: " + result.size());
 						if (num >= 2) {
-							result.addAll(subResult2.get());
+							List<String> tmpResult = subResult2.get();
+							result.addAll(tmpResult);
+							log.info("BE2 subResult2 size: " + tmpResult.size());
 						}
 						log.info("GET BE result");
 
-						List<String> FEResult = new ArrayList<>(Arrays.asList(res));
+						List<String> FEResult = new ArrayList<>(Arrays.asList(res)).subList(FEstart, n);
+						log.info("FEResult size: " + FEResult.size());
 						result.addAll(FEResult);
+						log.info(result.size());
 
 						exec.shutdown();
 						return result;
@@ -184,10 +191,37 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 						if (num >= 2) {
 							subResult2 = exec.submit(new CheckAsyncTask(password, hash, availableBEs, 1));
 						}
+
+						// leave some work on FE
+						int splitSize = n / (num + 1);
+						int FEstart = splitSize * num;
+						int batchSize = (n - FEstart) / 2;
+						CountDownLatch latch = new CountDownLatch(BE_WORKER_THREADS_NUM);
+						log.info("FE latch initialized！");
+						for (int i = 0; i < BE_WORKER_THREADS_NUM; ++i) {
+							int start = FEstart + batchSize * i;
+							int end;
+							if (i == BE_WORKER_THREADS_NUM - 1) {
+								end = n - 1;
+								log.info("end is: " + end);
+							} else {
+								end = start + batchSize - 1;
+								log.info("end is: " + end);
+							}
+							exec.execute(new CheckTask(passwordArray, hashArray, start, end, res, latch));
+						}
+						latch.await();
+						log.info("FE calculation done!");
+
+
 						List<Boolean> result = new ArrayList<>(subResult1.get());
 						if (num >= 2) {
 							result.addAll(subResult2.get());
 						}
+
+						List<Boolean> FEResult = new ArrayList<>(Arrays.asList(res)).subList(FEstart, n);
+						log.info("FEResult size: " + FEResult.size());
+						result.addAll(FEResult);
 
 						exec.shutdown();
 						return result;
