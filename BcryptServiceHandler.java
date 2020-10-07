@@ -40,7 +40,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 				int num = availableBEs.size();
 				if (num == 0) {
 					// for test only
-					// // log.info("hashing on FE!");
+					log.info("hashing on FE!");
 
 					hashPasswordHelper(input, logRounds, 0, n - 1, res);
 					return new ArrayList<>(Arrays.asList(res));
@@ -48,11 +48,12 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 					if (n == 1) {
 						int idx = rand.nextInt(num + 1);
 						if (idx == num) {
+							log.info("n==1 FE leave for itself");
 							hashPasswordHelper(input, logRounds, 0, n - 1, res);
 							//log.info("FE res.length: " + res.length);
 							return new ArrayList<>(Arrays.asList(res));
 						} else {
-							//log.info("n==1 FE offload to BE");
+							log.info("n==1 FE offload to BE");
 							ExecutorService exec = Executors.newFixedThreadPool(1);
 
 							Future<List<String>> result = exec.submit(new HashAsyncTask(password, logRounds, availableBEs.subList(idx, idx + 1), 0));
@@ -115,15 +116,15 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 				}
 
 			} else {	// BE
-				// log.info("enter BE");
+				log.info("enter BE");
 				if (n < BE_MULTI_THREAD_THRESHOLD) {
 					// for test only
-					// // log.info("single-threaded hashing on BE!");
+					log.info("single-threaded hashing on BE!");
 
 					hashPasswordHelper(input, logRounds, 0, n - 1, res);
 				} else {
 					// for test only
-					// // log.info("multi-threaded hashing on BE!");
+					log.info("multi-threaded hashing on BE!");
 
 					int batchSize = n / BE_WORKER_THREADS_NUM;
 					CountDownLatch latch = new CountDownLatch(BE_WORKER_THREADS_NUM);
