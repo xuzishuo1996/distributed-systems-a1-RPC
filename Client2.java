@@ -82,12 +82,13 @@ public class Client2 {
                 for (int i = 0; i < NUM_OF_REQUESTS_PER_THREAD; ++i) {
                     List<String> passwords = ClientUtility.genPasswords(LEN_OF_CHARS_PER_PASSWORD, NUM_OF_PASSWORDS_PER_REQUEST);
 
-                    long startTime = System.currentTimeMillis();
+//                    long startTime = System.currentTimeMillis();
 
 //                    semaphore.acquire();
                     List<String> hashes = client.hashPassword(passwords, LOG_ROUNDS);
+//                    log.info("hashes result from client: " + hashes);
 
-                    long endTime = System.currentTimeMillis();
+//                    long endTime = System.currentTimeMillis();
 //                    log.info("Request " + i  + " Latency for logRounds=" + LOG_ROUNDS + ": " + (endTime-startTime)/NUM_OF_PASSWORDS_PER_REQUEST);
 
                     // Check correctness

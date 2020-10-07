@@ -183,6 +183,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 							return result.get();
 						}
 					} else {
+						// offload to BE
 						ExecutorService exec = Executors.newFixedThreadPool(2);
 
 						Future<List<Boolean>> subResult1;
@@ -228,7 +229,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 					}
 				}
 
-			} else {
+			} else {	//BE
 				if (n < BE_MULTI_THREAD_THRESHOLD) {
 					// for test only
 					// log.info("single-threaded checking on BE!");
