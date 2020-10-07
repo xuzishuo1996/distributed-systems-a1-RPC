@@ -20,7 +20,7 @@ public class ClientHuge {
     static Logger log;
 
     private static final int LEN_OF_CHARS_PER_PASSWORD = 1024;
-    private static final int NUM_OF_PASSWORDS_PER_REQUEST = 1;
+    private static final int NUM_OF_PASSWORDS_PER_REQUEST = 2;
     private static final short LOG_ROUNDS = 10;
     private static final int NUM_OF_REQUESTS_PER_THREAD = 5;   //no interval between requests in a single thread
     private static final int NUM_OF_THREADS = 16;

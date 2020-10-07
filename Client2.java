@@ -86,7 +86,7 @@ public class Client2 {
 
 //                    semaphore.acquire();
                     List<String> hashes = client.hashPassword(passwords, LOG_ROUNDS);
-                    log.info("hash size: " + hashes.size());
+                    //log.info("hash size: " + hashes.size());
 //                    log.info("hashes result from client: " + hashes);
 
 //                    long endTime = System.currentTimeMillis();
