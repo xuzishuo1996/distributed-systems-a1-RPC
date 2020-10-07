@@ -49,7 +49,7 @@ public class CheckAsyncTask implements Callable<List<Boolean>> {
             BcryptService.AsyncClient client = currInfo.getAsyncClient();
 
             synchronized (client) {
-                currInfo.setBusy(true);
+//                currInfo.setBusy(true);
 //                currInfo.addLoad(splitSize, (short) 1);
 
 //                // for test only
@@ -57,7 +57,7 @@ public class CheckAsyncTask implements Callable<List<Boolean>> {
 
                 client.checkPassword(subPassword, subHash, new CheckCallback());
 
-                currInfo.setBusy(false);
+//                currInfo.setBusy(false);
 //                currInfo.subLoad(splitSize, (short) 1);
 
                 latch.await();
