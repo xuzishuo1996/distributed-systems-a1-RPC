@@ -38,10 +38,24 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 			if (isFE) {
 				List<String> notBusyBEs = Coordinator.getAvailableNodes();
 				List<String> existBEs = new ArrayList<>(Coordinator.nodeMap.keySet());
-				boolean choice = rand.nextBoolean();
+				List<String> availableBEs;
+				int num;
 
-				List<String> availableBEs = choice ? notBusyBEs: existBEs;
-				int num = availableBEs.size();
+//				boolean choice = rand.nextBoolean();
+//				availableBEs = choice ? notBusyBEs: existBEs;
+//				num = availableBEs.size();
+
+				if (n == 1) {
+					availableBEs = notBusyBEs;
+					num = availableBEs.size();
+				} else if (n <= 9) {
+					boolean choice = rand.nextBoolean();
+					availableBEs = choice ? notBusyBEs : existBEs;
+					num = availableBEs.size();
+				} else {
+					availableBEs = existBEs;
+					num = availableBEs.size();
+				}
 
 				if (num == 0) {
 					// for test only
