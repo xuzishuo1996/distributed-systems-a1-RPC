@@ -36,8 +36,13 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 			String[] input = password.toArray(new String[0]);
 			String[] res = new String[n];
 			if (isFE) {
-				List<String> availableBEs = Coordinator.getAvailableNodes();
+				List<String> notBusyBEs = Coordinator.getAvailableNodes();
+				List<String> existBEs = new ArrayList<>(Coordinator.nodeMap.keySet());
+				boolean choice = rand.nextBoolean();
+
+				List<String> availableBEs = choice ? notBusyBEs: existBEs;
 				int num = availableBEs.size();
+
 				if (num == 0) {
 					// for test only
 					log.info("hashing on FE!");
