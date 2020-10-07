@@ -3,10 +3,7 @@ import org.apache.log4j.Logger;
 
 import org.apache.thrift.TProcessorFactory;
 import org.apache.thrift.protocol.TBinaryProtocol;
-import org.apache.thrift.server.THsHaServer;
-import org.apache.thrift.server.TServer;
-import org.apache.thrift.server.TSimpleServer;
-import org.apache.thrift.server.TThreadPoolServer;
+import org.apache.thrift.server.*;
 import org.apache.thrift.transport.TNonblockingServerSocket;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TFramedTransport;
@@ -48,5 +45,14 @@ public class FENode {
 		sargs.maxWorkerThreads(32);
 		TThreadPoolServer server = new TThreadPoolServer(sargs);
 		server.serve();
+
+//		BcryptService.Processor<BcryptService.Iface> processor = new BcryptService.Processor<BcryptService.Iface>(new BcryptServiceHandler(true));
+//		TNonblockingServerSocket socket = new TNonblockingServerSocket(portFE);
+//		TThreadedSelectorServer.Args sargs = new TThreadedSelectorServer.Args(socket);
+//		sargs.protocolFactory(new TBinaryProtocol.Factory());
+//		sargs.transportFactory(new TFramedTransport.Factory());
+//		sargs.processorFactory(new TProcessorFactory(processor));
+//		TThreadedSelectorServer server = new TThreadedSelectorServer(sargs);
+//		server.serve();
     }
 }

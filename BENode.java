@@ -9,6 +9,7 @@ import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.server.THsHaServer;
 import org.apache.thrift.server.TSimpleServer;
 import org.apache.thrift.server.TThreadPoolServer;
+import org.apache.thrift.server.TThreadedSelectorServer;
 import org.apache.thrift.transport.*;
 
 public class BENode {
@@ -50,19 +51,8 @@ public class BENode {
 		/* launch Thrift TThreadPoolServer: uses one thread to accept connections
 		 * and then handles each connection using a dedicated thread
 		 */
-		BcryptService.Processor<BcryptService.Iface> processor = new BcryptService.Processor<BcryptService.Iface>(new BcryptServiceHandler(false));
-		TServerSocket socket = new TServerSocket(portBE);
-		TThreadPoolServer.Args sargs = new TThreadPoolServer.Args(socket);
-		sargs.protocolFactory(new TBinaryProtocol.Factory());
-		sargs.transportFactory(new TFramedTransport.Factory());
-		sargs.processorFactory(new TProcessorFactory(processor));
-		sargs.maxWorkerThreads(32);	//TODO: how to determine the maxWorker size?
-		TThreadPoolServer server = new TThreadPoolServer(sargs);
-		server.serve();
-
-		// launch Thrift THsHaServer: can process multiple requests in parallel
 //		BcryptService.Processor<BcryptService.Iface> processor = new BcryptService.Processor<BcryptService.Iface>(new BcryptServiceHandler(false));
-//		TNonblockingServerSocket socket = new TNonblockingServerSocket(portBE);
+//		TServerSocket socket = new TServerSocket(portBE);
 //		TThreadPoolServer.Args sargs = new TThreadPoolServer.Args(socket);
 //		sargs.protocolFactory(new TBinaryProtocol.Factory());
 //		sargs.transportFactory(new TFramedTransport.Factory());
@@ -70,6 +60,18 @@ public class BENode {
 //		sargs.maxWorkerThreads(32);	//TODO: how to determine the maxWorker size?
 //		TThreadPoolServer server = new TThreadPoolServer(sargs);
 //		server.serve();
+
+		// launch Thrift THsHaServer: can process multiple requests in parallel
+
+
+		BcryptService.Processor<BcryptService.Iface> processor = new BcryptService.Processor<BcryptService.Iface>(new BcryptServiceHandler(false));
+		TNonblockingServerSocket socket = new TNonblockingServerSocket(portBE);
+		TThreadedSelectorServer.Args sargs = new TThreadedSelectorServer.Args(socket);
+		sargs.protocolFactory(new TBinaryProtocol.Factory());
+		sargs.transportFactory(new TFramedTransport.Factory());
+		sargs.processorFactory(new TProcessorFactory(processor));
+		TThreadedSelectorServer server = new TThreadedSelectorServer(sargs);
+		server.serve();
 	}
 
 	static String getHostName()
