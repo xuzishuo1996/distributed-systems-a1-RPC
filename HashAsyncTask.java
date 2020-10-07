@@ -47,8 +47,10 @@ public class HashAsyncTask implements Callable<List<String>> {
             NodeInfo currInfo = Coordinator.nodeMap.get(availableBEs.get(i));
             BcryptService.AsyncClient client = currInfo.getAsyncClient();
 
+            while (currInfo.isBusy());
+            currInfo.setBusy(true);
             synchronized (client) {
-                currInfo.setBusy(true);
+//                currInfo.setBusy(true);
 //                currInfo.addLoad(splitSize, logRounds);
 
 //                // for test only
@@ -56,10 +58,11 @@ public class HashAsyncTask implements Callable<List<String>> {
 
                 client.hashPassword(subList, logRounds, new HashCallback());
 
-                currInfo.setBusy(false);
+//                currInfo.setBusy(false);
 //                currInfo.subLoad(splitSize, logRounds);
 
                 latch.await();
+                currInfo.setBusy(false);
             }
             return subResult;
         } catch (Exception e) {

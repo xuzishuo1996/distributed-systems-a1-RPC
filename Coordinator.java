@@ -22,10 +22,10 @@ public class Coordinator {
         synchronized (nodeMap) {
             for (Map.Entry<String, NodeInfo> entry : nodeMap.entrySet()) {
                 NodeInfo node = entry.getValue();
-                if (!node.isBusy()) {
+//                if (!node.isBusy()) {
                     availableNodes.add(entry.getKey());
-                    node.setBusy(true);
-                }
+//                    node.setBusy(true);
+//                }
             }
         }
         return availableNodes;

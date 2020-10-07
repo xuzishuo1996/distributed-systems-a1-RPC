@@ -111,7 +111,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 							exec.execute(new HashTask(input, logRounds, start, end, res, latch));
 						}
 						latch.await();
-						// log.info("FE calculation done!");
+						log.info("FE leave for itself calculation done!");
 
 						List<String> result = subResult1.get();
 						// log.info("BE1 subResult1 size: " + result.size());

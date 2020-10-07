@@ -7,7 +7,7 @@ import java.io.IOException;
 
 public class NodeInfo {
     // TODO: add hostname and postname or not?
-    private boolean busy;
+    private volatile boolean busy;
     private double load;    // because of the return val of Math.pow() is double.
     private final BcryptService.AsyncClient asyncClient;
 
