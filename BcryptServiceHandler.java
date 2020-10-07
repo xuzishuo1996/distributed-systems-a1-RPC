@@ -40,7 +40,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 				int num = availableBEs.size();
 				if (num == 0) {
 					// for test only
-					// log.info("hashing on FE!");
+					// // log.info("hashing on FE!");
 
 					hashPasswordHelper(input, logRounds, 0, n - 1, res);
 					return new ArrayList<>(Arrays.asList(res));
@@ -70,39 +70,39 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 						// leave some work on FE
 						int splitSize = n / (num + 1);
 						int FEstart = splitSize * num;
-						log.info("FEstart" + FEstart);
+						// log.info("FEstart" + FEstart);
 						int batchSize = (n - FEstart) / 2;
-						log.info("batchSize" + batchSize);
+						// log.info("batchSize" + batchSize);
 						CountDownLatch latch = new CountDownLatch(BE_WORKER_THREADS_NUM);
-						log.info("FE latch initialized！");
+						// log.info("FE latch initialized！");
 						for (int i = 0; i < BE_WORKER_THREADS_NUM; ++i) {
 							int start = FEstart + batchSize * i;
 							int end;
 							if (i == BE_WORKER_THREADS_NUM - 1) {
 								end = n - 1;
-								log.info("end is: " + end);
+								// log.info("end is: " + end);
 							} else {
 								end = start + batchSize - 1;
-								log.info("end is: " + end);
+								// log.info("end is: " + end);
 							}
 							exec.execute(new HashTask(input, logRounds, start, end, res, latch));
 						}
 						latch.await();
-						log.info("FE calculation done!");
+						// log.info("FE calculation done!");
 
 						List<String> result = subResult1.get();
-						log.info("BE1 subResult1 size: " + result.size());
+						// log.info("BE1 subResult1 size: " + result.size());
 						if (num >= 2) {
 							List<String> tmpResult = subResult2.get();
 							result.addAll(tmpResult);
-							log.info("BE2 subResult2 size: " + tmpResult.size());
+							// log.info("BE2 subResult2 size: " + tmpResult.size());
 						}
-						log.info("GET BE result");
+						// log.info("GET BE result");
 
 						List<String> FEResult = new ArrayList<>(Arrays.asList(res)).subList(FEstart, n);
-						log.info("FEResult size: " + FEResult.size());
+						// log.info("FEResult size: " + FEResult.size());
 						result.addAll(FEResult);
-						log.info(result.size());
+						// log.info(result.size());
 
 						exec.shutdown();
 						return result;
@@ -110,15 +110,15 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 				}
 
 			} else {	// BE
-				log.info("enter BE");
+				// log.info("enter BE");
 				if (n < BE_MULTI_THREAD_THRESHOLD) {
 					// for test only
-					// log.info("single-threaded hashing on BE!");
+					// // log.info("single-threaded hashing on BE!");
 
 					hashPasswordHelper(input, logRounds, 0, n - 1, res);
 				} else {
 					// for test only
-					// log.info("multi-threaded hashing on BE!");
+					// // log.info("multi-threaded hashing on BE!");
 
 					int batchSize = n / BE_WORKER_THREADS_NUM;
 					CountDownLatch latch = new CountDownLatch(BE_WORKER_THREADS_NUM);
@@ -133,7 +133,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 						new Thread(new HashTask(input, logRounds, start, end, res, latch)).start();
 					}
 					latch.await();
-					log.info("BE calculation done!");
+					// log.info("BE calculation done!");
 				}
 			}
 			return new ArrayList<>(Arrays.asList(res));
@@ -166,7 +166,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 				int num = availableBEs.size();
 				if (num == 0) {
 					// for test only
-					// log.info("checking on FE!");
+					// // log.info("checking on FE!");
 
 					checkPasswordHelper(passwordArray, hashArray, 0, n - 1, res);
 					return new ArrayList<>(Arrays.asList(res));
@@ -198,21 +198,21 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 						int FEstart = splitSize * num;
 						int batchSize = (n - FEstart) / 2;
 						CountDownLatch latch = new CountDownLatch(BE_WORKER_THREADS_NUM);
-						log.info("FE latch initialized！");
+						// log.info("FE latch initialized！");
 						for (int i = 0; i < BE_WORKER_THREADS_NUM; ++i) {
 							int start = FEstart + batchSize * i;
 							int end;
 							if (i == BE_WORKER_THREADS_NUM - 1) {
 								end = n - 1;
-								log.info("end is: " + end);
+								// log.info("end is: " + end);
 							} else {
 								end = start + batchSize - 1;
-								log.info("end is: " + end);
+								// log.info("end is: " + end);
 							}
 							exec.execute(new CheckTask(passwordArray, hashArray, start, end, res, latch));
 						}
 						latch.await();
-						log.info("FE calculation done!");
+						// log.info("FE calculation done!");
 
 
 						List<Boolean> result = new ArrayList<>(subResult1.get());
@@ -221,7 +221,7 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 						}
 
 						List<Boolean> FEResult = new ArrayList<>(Arrays.asList(res)).subList(FEstart, n);
-						log.info("FEResult size: " + FEResult.size());
+						// log.info("FEResult size: " + FEResult.size());
 						result.addAll(FEResult);
 
 						exec.shutdown();
@@ -232,12 +232,12 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 			} else {	//BE
 				if (n < BE_MULTI_THREAD_THRESHOLD) {
 					// for test only
-					// log.info("single-threaded checking on BE!");
+					// // log.info("single-threaded checking on BE!");
 
 					checkPasswordHelper(passwordArray, hashArray, 0, n - 1, res);
 				} else {
 					// for test only
-					// log.info("multi-threaded checking on BE!");
+					// // log.info("multi-threaded checking on BE!");
 
 					int batchSize = n / BE_WORKER_THREADS_NUM;
 					CountDownLatch latch = new CountDownLatch(BE_WORKER_THREADS_NUM);
@@ -332,20 +332,20 @@ public class BcryptServiceHandler implements BcryptService.Iface {
 
 	public void connectFE(String hostBE, int portBE) throws IllegalArgument, org.apache.thrift.TException {
 //		// for test only
-//		// log.info("Get connection request from BE node: " + hostBE + ":" + portBE);
+//		// // log.info("Get connection request from BE node: " + hostBE + ":" + portBE);
 
 		try {
 			String address = hostBE + ":" + portBE;
 			if (!Coordinator.containsNode(address)) {
-//				// log.info("does not contain this node, register it at coordinator");
+//				// // log.info("does not contain this node, register it at coordinator");
 				Coordinator.addNode(address, new NodeInfo(hostBE, portBE));
 
 //				// for test only
 //				int idx = 0;
-//				// log.info("====== Current NodeMap =====");
+//				// // log.info("====== Current NodeMap =====");
 //				for (String s: Coordinator.nodeMap.keySet()) {
 //					++idx;
-//					// log.info(idx + ": " + s);
+//					// // log.info(idx + ": " + s);
 //				}
 			}
 		} catch (Exception e) {
